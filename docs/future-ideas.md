@@ -1,6 +1,6 @@
 # Agentic Dev System — Future Ideas
 
-Extensions and ideas not yet implemented. Referenced from [agentic-dev-system-spec.md](agentic-dev-system-spec.md).
+Extensions and ideas not yet implemented.
 
 ## Harness Script (Layer 3)
 
@@ -30,6 +30,10 @@ Pause modes:
 
 Only build this after Layer 1 (individual steps) and Layer 2 (dev-cycle) are proven reliable.
 
+## Parallel Execution (layer 4)
+
+A layer 4 that handles parallel execution of tasks. This is a serious effort to get it right mainly due to the complexity of handling PR's merge conflicts etc. It will take time and experimentation.
+
 ## Remote Execution
 
 Trigger the system from GitHub/Linear without a local IDE.
@@ -47,25 +51,11 @@ curl -X POST https://api.cursor.com/v0/agents \
   -u YOUR_API_KEY: \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": { "text": "Follow .agents/skills/dev-cycle/SKILL.md for task: add-auth" },
+    "prompt": { "text": "Follow .agents/skills/workflow/dev-cycle/SKILL.md for task: add-auth" },
     "source": { "repository": "https://github.com/your-org/your-repo", "ref": "main" },
     "target": { "autoCreatePr": true }
   }'
 ```
-
-### Linear Integration
-
-Cursor has native Linear integration. Assign issue to "Cursor" or comment `@Cursor` to trigger Cloud Agent.
-
-## Issue Tracker Integration (v2)
-
-Linear or GitHub Projects as state backend via MCP. File-based state becomes cache/fallback. Tasks synced bidirectionally.
-
-Capabilities needed:
-
-- Read issues assigned to agent
-- Update issue status
-- Add comments with progress
 
 ## TDD Mode
 

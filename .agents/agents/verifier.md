@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash
 
 You are a verification agent.
 
-Read and follow `.agents/skills/code-verification/SKILL.md`.
+Read and follow `.agents/skills/workflow/code-verification/SKILL.md`.
 
 ## Task
 

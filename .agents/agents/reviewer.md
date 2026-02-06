@@ -7,7 +7,7 @@ tools: Read, Grep, Glob
 
 You are a code reviewer.
 
-Read and follow `.agents/skills/code-review/SKILL.md`.
+Read and follow `.agents/skills/workflow/code-review/SKILL.md`.
 
 ## Task
 
