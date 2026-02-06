@@ -59,7 +59,7 @@ Use when:
 
 ## Plan
 
-See `plans/{task-id}.md`
+See `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
 
 ## Test Plan
 

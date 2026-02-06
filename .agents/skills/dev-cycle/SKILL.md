@@ -50,17 +50,17 @@ Plan → Implement → Review → Verify → Document → Commit → Push-PR
 
 ### 1. Plan
 
-- Read task description
-- Create implementation plan
+- Run `plan-task` skill OR invoke `planner` subagent
+- If plan already exists (Cursor-native mode), skip this step
 - Save to `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
 - Update state: PLANNED
 
 ### 2. Implement
 
+- Run `implement-task` skill OR invoke `implementer` subagent
+- If code changes already exist (Cursor-native mode), skip this step
 - Read plan from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
 - Follow rules in `.agents/rules/`
-- Write code changes
-- Let agent handle lint/test iteration
 - Update state: IMPLEMENTED
 
 ### 3. Review (Gate)
@@ -88,8 +88,8 @@ Plan → Implement → Review → Verify → Document → Commit → Push-PR
 
 ### 6. Commit
 
-- Stage changes
-- Commit with descriptive message
+- Run `commit` skill
+- Stage changes and commit with descriptive message
 - Update state: COMMITTED
 
 ### 7. Push-PR
