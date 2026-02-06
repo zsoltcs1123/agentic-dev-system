@@ -1,0 +1,20 @@
+Key idea: The promoters of Agentin Engineering Systems undersell the complexities of using these systems for serious production work and not throwaway weekend projects/simple crud apps/mvps etc.
+
+They sell u do dream of building anything easily in no time from a single PRD doc just by directing a fleet of parallel agents. recipe for catasthrope.
+
+Real projects cannot be done from a single PRD. it has to be broken down. it has stakeholders, managers, multiple teams that require coordination.
+
+Yet building an agentic system for this use case is highly possible, it jsut takes time.
+
+U cannot start from a final system, u have to build it up along your project.
+
+The problem with Agentic Engineering Systems promoted like Cole Medins, Gas town etc
+
+- Too much trust in LLM capacity. the system is not tiered - it goes to the full-blown agentic parallal jarvis scifi way (probably for hype generation). no manual fallback. not composable. only the full pipeline.
+  the whole thinking is backwards
+
+- LLM capacity need verification. In real projects, trust evolves over time. u start simple, manual with skills. u refine the skill instructions over time to your sytem/project.
+
+- then with the strong skills foundation & integrations in place(project management, mcps etc) in place, you can run a dev-cycle for a SINGLE task. simple tasks first. edge cases will pile up. process has to be refined. continuous effort.
+
+- once ur dev-cycle is solid. Then u can think about parallel execution of tasks. for this u need a new layer that handles PR's merge conflicts etc. this is serious effort to get it right again. will take time and experimentation
