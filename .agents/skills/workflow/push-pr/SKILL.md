@@ -1,46 +1,46 @@
 ---
 name: push-pr
-description: Pushes branch to remote and creates a pull request via GitHub MCP. Use after commit step.
-version: 0.1.0
+description: Pushes branch to remote and creates a pull request. Use when asked to "push and create PR", "open a pull request", or as final step in dev-cycle after commit.
+metadata:
+  version: "0.1.0"
 ---
 
 # Push and Create PR
 
 Pushes the current branch and creates a pull request.
 
-## Trigger
-
-Use when:
+## When to Use
 
 - User asks to "push and create PR" or "open a pull request"
 - After commit step in dev-cycle
+- Ready to submit work for review
 
 ## Input
 
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
 - Current branch with committed changes
-- Task context (description, plan file path)
-
-## Output
-
-- PR URL
 
 ## Prerequisites
 
-- GitHub MCP server configured
+- GitHub MCP server configured or `gh` CLI available
 - Changes committed to local branch
 - Remote repository accessible
 
 ## Procedure
 
-1. Determine branch name
+1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+3. **Determine branch name**:
    - Use existing branch if not on main/master
-   - Create task branch if on main/master: `task/{task-id}` or `feature/{description}`
-2. Push branch to remote with `-u` flag
-3. Create pull request via GitHub MCP or `gh` CLI:
+   - Create task branch if on main/master: `task/{task-id}`
+4. **Push branch** to remote with `-u` flag
+5. **Check for existing PR**: If PR exists for branch, return existing URL
+6. **Create pull request** via GitHub MCP or `gh` CLI:
    - Title: Task description or commit message
-   - Body: Reference to plan file, summary of changes
-   - Base: main/master (or configured default branch)
-4. Return PR URL
+   - Body: Summary + plan reference + test plan
+   - Base: main/master (or configured default)
+7. **Update task state** to PR_CREATED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
+8. **Return PR URL**
 
 ## Branch Naming
 
@@ -88,8 +88,8 @@ See `.agents/artifacts/phases/{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
 - Suggestion: {how to resolve}
 ```
 
-## Notes
+## Important
 
-- If PR already exists for branch, return existing PR URL
 - Do not force push unless explicitly requested
-- Ensure branch is up to date with base before creating PR (warn if behind)
+- Warn if branch is behind base (may need rebase)
+- Never push secrets or credentials

@@ -1,47 +1,47 @@
 ---
 name: code-review
-description: Reviews code changes for quality issues. Saves report to task artifacts folder. Use as quality gate after implementation.
-version: 0.3.0
+description: Reviews code changes for quality issues and rule compliance. Use when asked to "review code", "check my changes", or as a quality gate after implementation. Saves structured report to task artifacts.
+metadata:
+  version: "0.3.0"
 ---
 
 # Code Review
 
 Quality gate that reviews code changes and saves a structured report.
 
-## Trigger
-
-Use when:
+## When to Use
 
 - User asks to "review my changes" or "review the code"
 - After implementation step in dev-cycle
+- Before committing or creating a PR
 
 ## Input
 
 - Task ID (phase-prefixed, e.g., `p01-task-001`)
 - Git diff or file changes to review
-- Project rules from `.agents/rules/`
-
-## Output
-
-- Structured report saved to task folder
 
 ## Procedure
 
-1. Get the task ID from prompt
-2. Parse task ID: extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-3. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
-4. Get the diff (staged changes or specified files)
-5. Read relevant rules from `.agents/rules/`
-6. Check for:
-   - Rule violations
-   - Code quality issues
-   - Potential bugs
-   - Missing error handling
-7. Save report to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`
+1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+3. **Get the diff**: Staged changes or specified files
+4. **Read rules** from `.agents/rules/` (general + language-specific)
+5. **Review against checklist**:
+   - Rule violations (naming, structure, patterns)
+   - Logic errors or potential bugs
+   - Missing error handling or edge cases
+   - Security issues (hardcoded secrets, injection risks)
+   - Performance concerns (N+1 queries, unnecessary loops)
+   - Test coverage gaps (if tests exist)
+6. **Classify severity**:
+   - **High**: Bugs, security issues, data loss risks — must fix
+   - **Medium**: Rule violations, poor patterns — should fix
+   - **Low**: Style, minor improvements — nice to fix
+7. **Determine verdict**: PASS if no high/medium issues, otherwise ISSUES
+8. **Save report** to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`
+9. **Update task state** to REVIEWED
 
-## Output Format
-
-Save to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`:
+## Report Format
 
 ### PASS
 
@@ -51,7 +51,7 @@ Save to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`:
 Task: {task-id}
 Date: {YYYY-MM-DD}
 
-No issues found. Changes are ready for verification.
+No blocking issues. Ready for verification.
 ```
 
 ### ISSUES
@@ -66,9 +66,11 @@ Date: {YYYY-MM-DD}
 
 - File: {filepath}
 - Line: {line number}
-- Severity: {high|medium|low}
+- Severity: high|medium|low
 - Description: {what's wrong}
 - Suggestion: {how to fix}
-
-## Issue 2: ...
 ```
+
+## Important
+
+Review only — do not fix issues directly. Report findings for the implementer to address.

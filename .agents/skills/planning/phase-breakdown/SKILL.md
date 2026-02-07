@@ -1,44 +1,40 @@
 ---
 name: phase-breakdown
-description: Converts a ROADMAP phase into an actionable task list saved to a phase folder. Use when breaking down a phase into implementable tasks.
-version: 0.2.0
+description: Converts a ROADMAP phase into an actionable task list. Use when asked to "break down phase X", "create tasks for phase", or when starting a new development phase. Outputs structured phase folder with tasks.
+metadata:
+  version: "0.2.0"
 ---
 
 # Phase Breakdown
 
 Converts a ROADMAP phase into discrete, implementable tasks.
 
-## Trigger
-
-Use when:
+## When to Use
 
 - You have a ROADMAP phase to break down
 - User asks to "break down phase X" or "create tasks for phase X"
+- Starting a new development phase
 
 ## Input
 
 - Phase description from ROADMAP or user input
 - Phase number/identifier (two digits, e.g., 01, 02, 10)
 
-## Output
-
-- Phase folder created at `.agents/artifacts/phases/phase-{number}-{name}/`
-- Task list saved to `phase.md` inside that folder
-
 ## Procedure
 
-1. Read the phase description
-2. Identify discrete, implementable tasks
-3. Create folder `.agents/artifacts/phases/phase-{number}-{name}/`
-4. For each task:
-   - Assign a phase-prefixed task ID: `p{number}-task-XXX` (e.g., `p01-task-001`)
-   - Write a clear, actionable description
-   - Note dependencies on other tasks (using full prefixed IDs)
-5. Save to `.agents/artifacts/phases/phase-{number}-{name}/phase.md`
+1. **Read phase description**: Understand scope and goals
+2. **Identify tasks**: Break into discrete, implementable units
+   - Each task should be completable in one dev-cycle
+   - Tasks should have clear acceptance criteria
+   - Identify dependencies between tasks
+3. **Create phase folder**: `.agents/artifacts/phases/phase-{number}-{name}/`
+4. **For each task**:
+   - Assign phase-prefixed ID: `p{number}-task-XXX`
+   - Write clear, actionable description
+   - Note dependencies (using full prefixed IDs)
+5. **Save** to `{phase-folder}/phase.md`
 
 ## Task ID Format
-
-Task IDs must be prefixed with the phase number:
 
 | Phase    | Task ID Format | Example        |
 | -------- | -------------- | -------------- |
@@ -63,3 +59,9 @@ Dependencies: none
 {description}
 Dependencies: p{number}-task-001
 ```
+
+## Guidelines
+
+- Keep tasks small enough for one dev-cycle
+- Order tasks by dependencies (independent tasks first)
+- Be specific — vague tasks lead to scope creep

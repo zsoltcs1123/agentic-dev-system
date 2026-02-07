@@ -1,16 +1,15 @@
 ---
 name: add-task
-description: Adds a single new task to local artifacts and the configured project tracker. Requires a phase context.
-version: 0.2.0
+description: Adds a single new task to a phase. Use when asked to "add task to phase X", "create a new task", or when a task is identified mid-phase. Creates local artifacts and pushes to tracker.
+metadata:
+  version: "0.2.0"
 ---
 
 # Add Task
 
 Creates a new task locally and pushes it to the project tracker.
 
-## Trigger
-
-Use when:
+## When to Use
 
 - User asks to "add a task to phase X" or "create pXX-task-XXX"
 - A new task is identified mid-phase that wasn't in the original breakdown
@@ -21,31 +20,22 @@ Use when:
 - Task title and description
 - Task number (auto-increment if not provided)
 
-## Output
-
-- Local `tasks/{task-id}/` folder inside the phase folder
-- `{task-id}-state.json` with state PENDING
-- Task created in project tracker (if adapter configured)
-- Task appended to phase.md
-
 ## Procedure
 
-1. Read `.agents/config.json` to get the active tracker adapter name
-2. If adapter is not `none`, read the adapter file from `adapters/{adapter-name}.md`
-3. Extract phase number from folder name (e.g., `phase-01-core` → `01`)
-4. Determine next task number:
+1. **Read config**: Get active tracker adapter from `.agents/config.json`
+2. **Load adapter**: If adapter is not `none`, read from `adapters/{adapter-name}.md`
+3. **Extract phase number** from folder name (e.g., `phase-01-core` → `01`)
+4. **Determine next task number**:
    - List existing tasks in `{phase-folder}/tasks/`
-   - Find highest task number and increment
-5. Generate task ID: `p{phase-number}-task-{task-number}` (e.g., `p01-task-003`)
-6. Create `{phase-folder}/tasks/{task-id}/` folder
-7. Create `{task-id}-state.json` with state PENDING and `phase` field
-8. Append task entry to `{phase-folder}/phase.md`
-9. If adapter configured: create item in tracker using the adapter's **Create Item** operation
-10. Store the tracker item ID in `state.json` under `trackerId`
+   - Find highest number and increment
+5. **Generate task ID**: `p{phase-number}-task-{task-number}` (e.g., `p01-task-003`)
+6. **Create folder**: `{phase-folder}/tasks/{task-id}/`
+7. **Create state file**: `{task-id}-state.json` with state PENDING
+8. **Append to phase.md**: Add task entry to `{phase-folder}/phase.md`
+9. **Push to tracker**: If adapter configured, create item using **Create Item** operation
+10. **Store tracker ID** in `state.json` under `trackerId`
 
 ## Task ID Format
-
-Task IDs are phase-prefixed to prevent collisions:
 
 | Phase   | Task ID Format | Example        |
 | ------- | -------------- | -------------- |
@@ -54,4 +44,4 @@ Task IDs are phase-prefixed to prevent collisions:
 
 ## Adapter
 
-This skill uses a project tracker adapter. See `adapters/_template.md` for the interface.
+Uses project tracker adapter. See `adapters/_template.md` for interface.

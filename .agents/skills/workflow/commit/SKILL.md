@@ -1,49 +1,48 @@
 ---
 name: commit
-description: Stages and commits changes for a task with a descriptive message. Updates task state.
-version: 0.1.0
+description: Stages and commits changes for a task with a descriptive message. Use when asked to "commit task-XXX", "commit changes", or as commit step in dev-cycle. Updates task state.
+metadata:
+  version: "0.1.0"
 ---
 
 # Commit
 
 Stages and commits changes for a completed task.
 
-## Trigger
+## When to Use
 
-Use when:
-
-- User asks to "commit task-XXX"
+- User asks to "commit task-XXX" or "commit changes"
 - Dev-cycle invokes the commit step
+- Changes are ready to be recorded
 
 ## Input
 
-- Task ID
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
 - Code changes (staged or unstaged)
-
-## Output
-
-- Git commit with descriptive message
 
 ## Procedure
 
-1. Run `git status` to review pending changes
-2. Stage relevant changes (`git add`)
-3. Compose a descriptive commit message referencing the task
-4. Commit changes
-5. Update task state to COMMITTED
+1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+3. **Review changes**: Run `git status` to see pending changes
+4. **Stage changes**: `git add` relevant files only
+5. **Compose message**: Follow format below, reference task ID
+6. **Commit**: Create commit with descriptive message
+7. **Update task state** to COMMITTED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
 
 ## Commit Message Format
 
 ```
-{type}: {short description} (task-{id})
+{type}: {short description} ({task-id})
 
 {Optional body with details}
 ```
 
-Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
+**Types**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
-## Guidelines
+## Important
 
-- Do not commit files that contain secrets
+- Do not commit files containing secrets (.env, credentials, keys)
 - Do not force push or amend unless explicitly requested
 - Only commit changes related to the task
+- Review diff before committing

@@ -1,16 +1,15 @@
 ---
 name: sync-tasks
-description: Parses a phase file and pushes all tasks to the configured project tracker. Creates local task folders and state files inside the phase folder.
-version: 0.2.0
+description: Parses a phase file and pushes all tasks to the configured project tracker. Use when asked to "sync tasks", "push phase to tracker", or after running phase-breakdown. Creates local task folders and state files.
+metadata:
+  version: "0.2.0"
 ---
 
 # Sync Tasks
 
 Initializes tasks from a phase file both locally and in the configured project tracker.
 
-## Trigger
-
-Use when:
+## When to Use
 
 - User asks to "sync tasks for phase X" or "push phase tasks to tracker"
 - After running phase-breakdown to populate a phase file
@@ -19,25 +18,18 @@ Use when:
 
 - Phase file path (e.g., `.agents/artifacts/phases/phase-01-core/phase.md`)
 
-## Output
-
-- Local `tasks/{task-id}/` folders inside the phase folder
-- `{task-id}-state.json` for each task
-- Tasks created in the project tracker (if adapter configured)
-- Summary of tasks created
-
 ## Procedure
 
-1. Read `.agents/config.json` to get the active tracker adapter name
-2. If adapter is not `none`, read the adapter file from `adapters/{adapter-name}.md`
-3. Parse the phase file path to extract phase folder (e.g., `phase-01-core`)
-4. Parse the phase file for task entries (`### pXX-task-XXX: {title}`)
-5. For each task:
-   a. Create `{phase-folder}/tasks/{task-id}/` folder if it doesn't exist
-   b. Create `{task-id}-state.json` with state PENDING and `phase` field (skip if already exists)
-   c. If adapter configured: create item in tracker using the adapter's **Create Item** operation
-   d. Store the tracker item ID in `state.json` under `trackerId`
-6. Report summary: tasks created locally, tasks pushed to tracker, tasks skipped (already existed)
+1. **Read config**: Get active tracker adapter from `.agents/config.json`
+2. **Load adapter**: If adapter is not `none`, read from `adapters/{adapter-name}.md`
+3. **Parse phase path**: Extract phase folder (e.g., `phase-01-core`)
+4. **Parse phase file**: Find task entries (`### pXX-task-XXX: {title}`)
+5. **For each task**:
+   - Create `{phase-folder}/tasks/{task-id}/` folder if missing
+   - Create `{task-id}-state.json` with state PENDING (skip if exists)
+   - If adapter configured: create item using adapter's **Create Item** operation
+   - Store tracker item ID in `state.json` under `trackerId`
+6. **Report summary**: Tasks created locally, pushed to tracker, skipped
 
 ## State File Format
 
@@ -56,8 +48,8 @@ Use when:
 
 ## Idempotency
 
-Skip tasks that already have a `trackerId` in state.json. This makes it safe to re-run after adding new tasks to a phase file.
+Skip tasks that already have a local folder or `trackerId`. Safe to re-run after adding new tasks to a phase file.
 
 ## Adapter
 
-This skill uses a project tracker adapter. See `adapters/_template.md` for the interface.
+Uses project tracker adapter. See `adapters/_template.md` for interface.
