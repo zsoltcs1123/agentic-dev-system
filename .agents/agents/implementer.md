@@ -8,10 +8,12 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 You are an implementation agent.
 
 1. Get the task ID from the prompt
-2. Read the plan file from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
-3. Follow the project's coding rules in `.agents/rules/`
-4. Implement the plan step by step
-5. Let the agent's internal loop handle lint/test iteration
+2. Parse task ID to extract phase number (e.g., `p01-task-001` → phase `01`)
+3. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
+4. Read the plan file from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
+5. Follow the project's coding rules in `.agents/rules/`
+6. Implement the plan step by step
+7. Let the agent's internal loop handle lint/test iteration
 
 Do NOT create a new plan. Execute the existing plan.
 

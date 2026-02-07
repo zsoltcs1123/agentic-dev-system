@@ -9,7 +9,7 @@ A portable, composable framework for AI-assisted development workflows. Works wi
 3. **Project tracker integration** - Adapt to your project tracker of choice (GitHub Projects, Linear, etc.)
 4. **Lean context** — `AGENTS.md` files are brief; details live in skills/rules
 5. **Composable** — Every skill works standalone or as part of the dev-cycle orchestrator
-6. **State in files** — All task artifacts grouped per task in `.agents/artifacts/tasks/`
+6. **State in files** — All task artifacts grouped by phase in `.agents/artifacts/phases/`
 7. **Portable skills** — Skills contain minimal, generic instructions. Project-specific conventions belong in `.agents/rules/`
 
 ## Structure
@@ -20,7 +20,12 @@ A portable, composable framework for AI-assisted development workflows. Works wi
 ├── skills/       # Workflows (the logic)
 ├── agents/       # Subagent definitions (thin wrappers)
 ├── rules/        # Coding conventions
-└── artifacts/    # Task artifacts (phases, plans, reviews, state)
+└── artifacts/
+    └── phases/
+        └── phase-01-core/
+            ├── phase.md           # Phase description and task list
+            └── tasks/
+                └── p01-task-001/  # Task artifacts (plan, review, state)
 ```
 
 Agent-specific folders (`.cursor/`, `.claude/`, `.gemini/`) contain symlinks to `.agents/skills/`.
@@ -79,11 +84,11 @@ Every skill works standalone. Use one skill, chain a few, or run the full dev-cy
 "Review my changes"
 
 # Partial pipeline — already implemented, just need QA
-"Review my changes for task-001"
-"Verify changes for task-001"
+"Review my changes for p01-task-001"
+"Verify changes for p01-task-001"
 
 # Full dev-cycle — hands-off automation
-"Run dev-cycle for task-001"
+"Run dev-cycle for p01-task-001"
 ```
 
 No lock-in to the full pipeline. Start small, add steps as needed.
@@ -92,19 +97,19 @@ No lock-in to the full pipeline. Start small, add steps as needed.
 
 ```
 # Individual steps (chat):
-"Plan task-001: add user authentication"
-"Implement the plan for task-001"
-"Review my changes for task-001"
-"Verify changes for task-001"
+"Plan p01-task-001: add user authentication"
+"Implement the plan for p01-task-001"
+"Review my changes for p01-task-001"
+"Verify changes for p01-task-001"
 "Update documentation"
-"Commit task-001"
+"Commit p01-task-001"
 "Push and create PR"
 
 # Full dev-cycle:
-"Run dev-cycle for task-001"
+"Run dev-cycle for p01-task-001"
 
 # CLI:
-agent -p "Follow .agents/skills/workflow/dev-cycle/SKILL.md for task: task-001"
+agent -p "Follow .agents/skills/workflow/dev-cycle/SKILL.md for task: p01-task-001"
 ```
 
 ## Skills
@@ -163,24 +168,40 @@ You are a code reviewer. Read and follow `.agents/skills/workflow/code-review/SK
 
 ## Artifacts & State
 
-All task artifacts are stored in `.agents/artifacts/tasks/task-{id}/`:
+Tasks are organized by phase. Each phase folder contains a `phase.md` and a `tasks/` subfolder:
 
-| Artifact                    | Description          |
-| --------------------------- | -------------------- |
-| `task-{id}-plan.md`         | Implementation plan  |
-| `task-{id}-review.md`       | Code review report   |
-| `task-{id}-verification.md` | Verification report  |
-| `task-{id}-state.json`      | Task state + history |
+```
+.agents/artifacts/phases/phase-01-core/
+├── phase.md              # Phase description and task list
+└── tasks/
+    └── p01-task-001/     # Task folder (phase-prefixed ID)
+        ├── p01-task-001-plan.md
+        ├── p01-task-001-review.md
+        ├── p01-task-001-verification.md
+        └── p01-task-001-state.json
+```
 
-**Cursor Plan Mode note:** Cursor saves plans to `~/.cursor/plans/` by default. After using Cursor's Plan Mode, manually save the plan markdown into `.agents/artifacts/tasks/task-{id}/` to integrate with the task system.
+### Task ID Format
 
-State file example:
+Task IDs are prefixed with the phase number to prevent collisions and provide context:
+
+| Phase    | Task ID Format | Example        |
+| -------- | -------------- | -------------- |
+| Phase 1  | `p01-task-XXX` | `p01-task-001` |
+| Phase 2  | `p02-task-XXX` | `p02-task-003` |
+| Phase 10 | `p10-task-XXX` | `p10-task-015` |
+
+**Cursor Plan Mode note:** Cursor saves plans to `~/.cursor/plans/` by default. After using Cursor's Plan Mode, manually save the plan markdown into the appropriate task folder to integrate with the task system.
+
+### State File
+
+State file example (`.agents/artifacts/phases/phase-01-core/tasks/p01-task-001/p01-task-001-state.json`):
 
 ```json
 {
-  "id": "task-001",
+  "id": "p01-task-001",
   "description": "Add user authentication",
-  "source": ".agents/artifacts/phases/phase-01-core.md",
+  "phase": "phase-01-core",
   "trackerId": "PVTI_abc123",
   "state": "REVIEWED",
   "stateHistory": [
@@ -218,7 +239,7 @@ The system integrates with external project trackers (GitHub Projects, Linear, e
 phase-breakdown
       │
       v
-phases/phase-XX.md
+phases/phase-XX-name/phase.md
       │
       ├──────────────────┬──────────────────┐
       v                  v                  v

@@ -1,7 +1,7 @@
 ---
 name: phase-breakdown
-description: Converts a ROADMAP phase into an actionable task list saved to phases/*.md. Use when breaking down a phase into implementable tasks.
-version: 0.1.0
+description: Converts a ROADMAP phase into an actionable task list saved to a phase folder. Use when breaking down a phase into implementable tasks.
+version: 0.2.0
 ---
 
 # Phase Breakdown
@@ -18,21 +18,33 @@ Use when:
 ## Input
 
 - Phase description from ROADMAP or user input
-- Phase number/identifier
+- Phase number/identifier (two digits, e.g., 01, 02, 10)
 
 ## Output
 
-- Task list saved to `phases/phase-{number}-{name}.md`
+- Phase folder created at `.agents/artifacts/phases/phase-{number}-{name}/`
+- Task list saved to `phase.md` inside that folder
 
 ## Procedure
 
 1. Read the phase description
 2. Identify discrete, implementable tasks
-3. For each task:
-   - Assign a task ID (task-001, task-002, etc.)
+3. Create folder `.agents/artifacts/phases/phase-{number}-{name}/`
+4. For each task:
+   - Assign a phase-prefixed task ID: `p{number}-task-XXX` (e.g., `p01-task-001`)
    - Write a clear, actionable description
-   - Note dependencies on other tasks
-4. Save to `phases/phase-{number}-{name}.md`
+   - Note dependencies on other tasks (using full prefixed IDs)
+5. Save to `.agents/artifacts/phases/phase-{number}-{name}/phase.md`
+
+## Task ID Format
+
+Task IDs must be prefixed with the phase number:
+
+| Phase    | Task ID Format | Example        |
+| -------- | -------------- | -------------- |
+| Phase 1  | `p01-task-XXX` | `p01-task-001` |
+| Phase 2  | `p02-task-XXX` | `p02-task-003` |
+| Phase 10 | `p10-task-XXX` | `p10-task-015` |
 
 ## Output Format
 
@@ -41,13 +53,13 @@ Use when:
 
 ## Tasks
 
-### task-001: {title}
+### p{number}-task-001: {title}
 
 {description}
 Dependencies: none
 
-### task-002: {title}
+### p{number}-task-002: {title}
 
 {description}
-Dependencies: task-001
+Dependencies: p{number}-task-001
 ```

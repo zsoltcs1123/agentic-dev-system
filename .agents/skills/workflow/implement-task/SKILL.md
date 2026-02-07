@@ -1,7 +1,7 @@
 ---
 name: implement-task
 description: Implements a single task based on its saved plan file. Writes code following project rules.
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Implement Task
@@ -12,13 +12,12 @@ Executes an existing implementation plan by writing code.
 
 Use when:
 
-- User asks to "implement task-XXX"
+- User asks to "implement pXX-task-XXX"
 - Dev-cycle invokes the implement step (full system mode)
 
 ## Input
 
-- Task ID
-- Plan file at `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
 
 ## Output
 
@@ -26,11 +25,13 @@ Use when:
 
 ## Procedure
 
-1. Read the plan from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
-2. Read relevant coding rules from `.agents/rules/`
-3. Implement the plan step by step
-4. Let the agent's internal loop handle lint/test iteration
-5. Update task state to IMPLEMENTED
+1. Parse task ID: extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+2. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
+3. Read the plan from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
+4. Read relevant coding rules from `.agents/rules/`
+5. Implement the plan step by step
+6. Let the agent's internal loop handle lint/test iteration
+7. Update task state to IMPLEMENTED
 
 ## Guidelines
 

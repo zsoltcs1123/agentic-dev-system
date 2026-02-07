@@ -1,7 +1,7 @@
 ---
 name: code-verification
 description: Verifies code changes match the implementation plan. Saves report to task artifacts folder. Use after code-review passes.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Code Verification
@@ -17,38 +17,39 @@ Use when:
 
 ## Input
 
-- Task ID (e.g., `task-001`)
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
 - Git diff or file changes
-- Plan file from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
 
 ## Output
 
-- Structured report saved to `.agents/artifacts/tasks/task-{id}/task-{id}-verification.md`
-- Test results saved to `.agents/artifacts/tasks/task-{id}/task-{id}-test-results.md` (if tests run)
+- Structured report saved to task folder
+- Test results saved to task folder (if tests run)
 
 ## Procedure
 
 1. Get the task ID from prompt
-2. Read the plan file from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
-3. Get the diff (staged changes or specified files)
-4. Compare implementation against plan:
+2. Parse task ID: extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+3. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
+4. Read the plan file from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
+5. Get the diff (staged changes or specified files)
+6. Compare implementation against plan:
    - Are all planned changes present?
    - Are there unplanned changes?
    - Do changes match the approach?
-5. Run tests if specified in plan
-6. Save report to `.agents/artifacts/tasks/task-{id}/task-{id}-verification.md`
-7. If tests were run, save results to `.agents/artifacts/tasks/task-{id}/task-{id}-test-results.md`
+7. Run tests if specified in plan
+8. Save report to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
+9. If tests were run, save results to `{phase-folder}/tasks/{task-id}/{task-id}-test-results.md`
 
 ## Output Format
 
-Save to `.agents/artifacts/tasks/task-{id}/task-{id}-verification.md`:
+Save to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`:
 
 ### PASS
 
 ```markdown
 # Verification: PASS
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 Implementation matches plan. All planned items completed.
@@ -62,7 +63,7 @@ Implementation matches plan. All planned items completed.
 ```markdown
 # Verification: ISSUES
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 ## Missing: {planned item}
@@ -81,12 +82,12 @@ Actual: {what was implemented}
 
 ### Test Results (if applicable)
 
-Save to `.agents/artifacts/tasks/task-{id}/task-{id}-test-results.md`:
+Save to `{phase-folder}/tasks/{task-id}/{task-id}-test-results.md`:
 
 ```markdown
 # Test Results
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 ## Summary

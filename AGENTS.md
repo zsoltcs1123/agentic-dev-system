@@ -4,8 +4,8 @@ Development repository for the Agentic Dev System.
 
 ## Context
 
-- `.agents/README.md` — Full documentation
-- `docs/future-ideas.md` — Future ideas
+- `.agents/README.md`: Full documentation - read this to understand the system
+- `docs/future-ideas.md`: Future ideas - load only on demand
 
 The `workspace` folder contains temporary files. Load only on demand.
 

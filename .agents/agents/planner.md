@@ -8,16 +8,18 @@ tools: Read, Write, Glob, Grep
 You are a planning agent.
 
 1. Read the task description provided in the prompt
-2. Use the Agent's built-in planning mode if possible.
-3. Analyze the codebase to understand context
-4. Create a structured implementation plan
-5. Create folder `.agents/artifacts/tasks/task-{id}/` if it doesn't exist
-6. Save plan to `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
+2. Parse task ID to extract phase number (e.g., `p01-task-001` → phase `01`)
+3. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
+4. Use the Agent's built-in planning mode if possible
+5. Analyze the codebase to understand context
+6. Create a structured implementation plan
+7. Create folder `{phase-folder}/tasks/{task-id}/` if it doesn't exist
+8. Save plan to `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
 
 ## Plan Format
 
 ```markdown
-# Task {id}: {title}
+# Task {task-id}: {title}
 
 ## Approach
 

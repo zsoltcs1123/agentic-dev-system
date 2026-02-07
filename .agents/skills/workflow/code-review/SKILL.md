@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Reviews code changes for quality issues. Saves report to task artifacts folder. Use as quality gate after implementation.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Code Review
@@ -17,36 +17,38 @@ Use when:
 
 ## Input
 
-- Task ID (e.g., `task-001`)
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
 - Git diff or file changes to review
 - Project rules from `.agents/rules/`
 
 ## Output
 
-- Structured report saved to `.agents/artifacts/tasks/task-{id}/task-{id}-review.md`
+- Structured report saved to task folder
 
 ## Procedure
 
 1. Get the task ID from prompt
-2. Get the diff (staged changes or specified files)
-3. Read relevant rules from `.agents/rules/`
-4. Check for:
+2. Parse task ID: extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+3. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
+4. Get the diff (staged changes or specified files)
+5. Read relevant rules from `.agents/rules/`
+6. Check for:
    - Rule violations
    - Code quality issues
    - Potential bugs
    - Missing error handling
-5. Save report to `.agents/artifacts/tasks/task-{id}/task-{id}-review.md`
+7. Save report to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`
 
 ## Output Format
 
-Save to `.agents/artifacts/tasks/task-{id}/task-{id}-review.md`:
+Save to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`:
 
 ### PASS
 
 ```markdown
 # Code Review: PASS
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 No issues found. Changes are ready for verification.
@@ -57,7 +59,7 @@ No issues found. Changes are ready for verification.
 ```markdown
 # Code Review: ISSUES
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 ## Issue 1: {title}

@@ -12,23 +12,25 @@ Read and follow `.agents/skills/workflow/code-verification/SKILL.md`.
 ## Task
 
 1. Get the task ID from the prompt
-2. Read the plan file from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
-3. Get the diff or changes to verify
-4. Compare implementation against plan
-5. Run tests if specified
-6. Save report to `.agents/artifacts/tasks/task-{id}/task-{id}-verification.md`
-7. If tests were run, save results to `.agents/artifacts/tasks/task-{id}/task-{id}-test-results.md`
+2. Parse task ID to extract phase number (e.g., `p01-task-001` → phase `01`)
+3. Locate phase folder: `.agents/artifacts/phases/phase-{number}-*/`
+4. Read the plan file from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
+5. Get the diff or changes to verify
+6. Compare implementation against plan
+7. Run tests if specified
+8. Save report to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
+9. If tests were run, save results to `{phase-folder}/tasks/{task-id}/{task-id}-test-results.md`
 
 ## Output Format
 
-Save to `.agents/artifacts/tasks/task-{id}/task-{id}-verification.md`:
+Save to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`:
 
 ### If compliant:
 
 ```markdown
 # Verification: PASS
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 Implementation matches plan. All planned items completed.
@@ -42,7 +44,7 @@ Implementation matches plan. All planned items completed.
 ```markdown
 # Verification: ISSUES
 
-Task: task-{id}
+Task: {task-id}
 Date: {YYYY-MM-DD}
 
 ## Missing: {planned item}

@@ -1,7 +1,7 @@
 ---
 name: dev-cycle
 description: Orchestrates the full development cycle for a single task. Sequences Plan, Implement, Review, Verify, Document, Commit, Push-PR with gate enforcement. Use when running a complete task workflow.
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Dev Cycle
@@ -12,31 +12,32 @@ Orchestrates the complete development workflow for a single task.
 
 Use when:
 
-- User asks to "run dev-cycle for task-XXX"
-- Processing a task from `.agents/artifacts/phases/*.md`
+- User asks to "run dev-cycle for pXX-task-XXX"
+- Processing a task from a phase file
 
 ## Input
 
-- Task ID or task description
-- Optional: phase file reference
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
 
 ## Output
 
 - Pull request created with all gates passed
-- All artifacts in `.agents/artifacts/tasks/task-{id}/`
+- All artifacts in the task folder
 
 ## Artifact Location
 
-All task artifacts are stored in `.agents/artifacts/tasks/task-{id}/`:
+Task artifacts are stored inside their phase folder:
 
 ```
-.agents/artifacts/tasks/task-{id}/
-├── task-{id}-plan.md
-├── task-{id}-review.md
-├── task-{id}-verification.md
-├── task-{id}-test-results.md   # Optional
-└── task-{id}-state.json
+.agents/artifacts/phases/phase-01-core/tasks/p01-task-001/
+├── p01-task-001-plan.md
+├── p01-task-001-review.md
+├── p01-task-001-verification.md
+├── p01-task-001-test-results.md   # Optional
+└── p01-task-001-state.json
 ```
+
+The phase number is extracted from the task ID prefix (e.g., `p01-task-001` → phase `01`).
 
 ## Workflow
 
@@ -52,21 +53,21 @@ Plan → Implement → Review → Verify → Document → Commit → Push-PR
 
 - Run `plan-task` skill OR invoke `planner` subagent
 - If plan already exists (Cursor-native mode), skip this step
-- Save to `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
+- Save to `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
 - Update state: PLANNED
 
 ### 2. Implement
 
 - Run `implement-task` skill OR invoke `implementer` subagent
 - If code changes already exist (Cursor-native mode), skip this step
-- Read plan from `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
+- Read plan from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
 - Follow rules in `.agents/rules/`
 - Update state: IMPLEMENTED
 
 ### 3. Review (Gate)
 
 - Invoke `reviewer` subagent OR run code-review skill
-- Save report to `.agents/artifacts/tasks/task-{id}/task-{id}-review.md`
+- Save report to `{phase-folder}/tasks/{task-id}/{task-id}-review.md`
 - Must return PASS to proceed
 - On ISSUES: fix and re-run review only
 - Update state: REVIEWED
@@ -74,7 +75,7 @@ Plan → Implement → Review → Verify → Document → Commit → Push-PR
 ### 4. Verify (Gate)
 
 - Invoke `verifier` subagent OR run code-verification skill
-- Save report to `.agents/artifacts/tasks/task-{id}/task-{id}-verification.md`
+- Save report to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
 - Compare implementation to plan
 - Must return PASS to proceed
 - On ISSUES: fix and re-run verify only
@@ -108,11 +109,12 @@ Plan → Implement → Review → Verify → Document → Commit → Push-PR
 
 ## State Tracking
 
-Update `.agents/artifacts/tasks/task-{id}/task-{id}-state.json` after each step:
+Update `{phase-folder}/tasks/{task-id}/{task-id}-state.json` after each step:
 
 ```json
 {
-  "id": "task-001",
+  "id": "p01-task-001",
+  "phase": "phase-01-core",
   "state": "PR_CREATED",
   "stateHistory": [
     { "state": "PENDING", "timestamp": "..." },

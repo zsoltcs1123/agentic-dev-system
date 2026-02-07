@@ -1,60 +1,78 @@
 ---
 name: plan-task
-description: Creates an implementation plan for a single task. Analyzes requirements and codebase, outputs structured plan to task artifacts folder.
-version: 0.1.0
+description: Creates a structured implementation plan for a coding task. Use when asked to "plan pXX-task-XXX", create an implementation plan, or before starting complex development work. Analyzes requirements and codebase context.
+metadata:
+  version: "0.2.0"
 ---
 
 # Plan Task
 
-Creates a structured implementation plan for a single task.
+Creates a structured implementation plan before coding begins.
 
-## Trigger
+## When to Use
 
-Use when:
-
-- User asks to "plan task-XXX"
+- User asks to "plan pXX-task-XXX"
 - Dev-cycle invokes the plan step (full system mode)
+- Before implementing any non-trivial change
 
 ## Input
 
-- Task ID and description
-- Optional: phase file reference
-
-## Output
-
-- Plan saved to `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
+- Task ID (phase-prefixed, e.g., `p01-task-001`)
+- Task description
 
 ## Procedure
 
-1. Read the task description
-2. Analyze the codebase to understand context
-3. Create folder `.agents/artifacts/tasks/task-{id}/` if it doesn't exist
-4. Create a structured implementation plan
-5. Save to `.agents/artifacts/tasks/task-{id}/task-{id}-plan.md`
-6. Update task state to PLANNED
+1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
+2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+3. **Clarify requirements**: Ensure the task description is clear. Ask if ambiguous.
+4. **Analyze codebase**:
+   - Find similar patterns in the codebase
+   - Identify files likely to be affected
+   - Check for relevant conventions or abstractions
+5. **Create task folder** inside phase: `.agents/artifacts/phases/phase-{number}-{name}/tasks/{task-id}/`
+6. **Create plan** using the format below
+7. **Save** to `{task-folder}/{task-id}-plan.md`
+8. **Update task state** to PLANNED
 
 ## Plan Format
 
 ```markdown
 # Task {id}: {title}
 
+## Summary
+
+{One sentence describing what this task accomplishes}
+
 ## Approach
 
-{High-level approach to implementation}
+{High-level strategy — why this approach over alternatives}
 
 ## Files to Modify
 
-- {file1}: {what changes}
-- {file2}: {what changes}
+| File   | Change         |
+| ------ | -------------- |
+| {path} | {what and why} |
 
 ## Steps
 
-1. {First step}
-2. {Second step}
+1. {Step with enough detail to execute}
+2. {Next step}
+
+## Dependencies
+
+- {What must exist or be true before starting}
+
+## Acceptance Criteria
+
+- [ ] {How to verify this is complete}
 
 ## Risks
 
-- {Potential issue and mitigation}
+| Risk    | Mitigation      |
+| ------- | --------------- |
+| {Issue} | {How to handle} |
 ```
 
-Do NOT implement the plan. Only create it.
+## Important
+
+Do NOT implement. Only plan.
