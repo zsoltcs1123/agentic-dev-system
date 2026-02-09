@@ -1,13 +1,13 @@
 ---
 name: code-verification
-description: Verifies code changes match the implementation plan and acceptance criteria. Use when asked to "verify task", "check plan compliance", or as final gate after code-review passes. Runs tests if applicable.
+description: Verifies code changes match the implementation plan and acceptance criteria. Use when asked to "verify task", "check plan compliance", or as final gate after code-review passes.
 metadata:
-  version: "0.3.0"
+  version: "0.1.0"
 ---
 
 # Code Verification
 
-Final gate that verifies implementation matches the plan and passes tests.
+Final gate that verifies implementation matches the plan.
 
 ## When to Use
 
@@ -21,8 +21,10 @@ Final gate that verifies implementation matches the plan and passes tests.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Read plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
 4. **Get the diff**: Staged changes or specified files
 5. **Verify plan compliance**:
@@ -31,15 +33,11 @@ Final gate that verifies implementation matches the plan and passes tests.
    - Any unplanned changes? (flag for justification)
    - Approach matches what was planned?
 6. **Check acceptance criteria**: Each criterion from the plan should be verifiable
-7. **Run tests** if project has them:
-   - Run relevant test suite
-   - Capture pass/fail counts and output
-8. **Determine verdict**:
-   - **PASS**: All planned items done, acceptance criteria met, tests pass
-   - **ISSUES**: Missing items, unplanned changes, or test failures
-9. **Save report** to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
-10. **Save test results** (if tests ran) to `{phase-folder}/tasks/{task-id}/{task-id}-test-results.md`
-11. **Update task state** to VERIFIED
+7. **Determine verdict**:
+   - **PASS**: All planned items done, acceptance criteria met
+   - **ISSUES**: Missing items, unplanned changes, or criteria not met
+8. **Save report** to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
+9. **Update task state** to VERIFIED
 
 ## Report Format
 
@@ -78,34 +76,13 @@ Date: {YYYY-MM-DD}
 
 - Plan: {what was planned}
 - Actual: {what was implemented}
-
-## Test Failures
-
-{Summary of failing tests}
 ```
 
-### Test Results
+## Error Handling
 
-Save to `{phase-folder}/tasks/{task-id}/{task-id}-test-results.md`:
-
-```markdown
-# Test Results
-
-Task: {task-id}
-Date: {YYYY-MM-DD}
-
-## Summary
-
-| Metric | Count |
-| ------ | ----- |
-| Total  | {n}   |
-| Passed | {n}   |
-| Failed | {n}   |
-
-## Output
-
-{test runner output}
-```
+- Plan not found → fail with: "Plan file not found. Run plan-task first."
+- No diff/changes → fail with: "No changes to verify"
+- Phase folder not found → fail with: "Phase folder not found for {task-id}"
 
 ## Important
 

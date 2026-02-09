@@ -28,8 +28,10 @@ Pushes the current branch and creates a pull request.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Determine branch name**:
    - Use existing branch if not on main/master
    - Create task branch if on main/master: `task/{task-id}`

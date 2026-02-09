@@ -2,7 +2,7 @@
 name: phase-breakdown
 description: Converts a ROADMAP phase into an actionable task list. Use when asked to "break down phase X", "create tasks for phase", or when starting a new development phase. Outputs structured phase folder with tasks.
 metadata:
-  version: "0.2.0"
+  version: "0.1.0"
 ---
 
 # Phase Breakdown
@@ -22,12 +22,14 @@ Converts a ROADMAP phase into discrete, implementable tasks.
 
 ## Procedure
 
+See `.agents/AGENTS.md` for path conventions.
+
 1. **Read phase description**: Understand scope and goals
 2. **Identify tasks**: Break into discrete, implementable units
    - Each task should be completable in one dev-cycle
    - Tasks should have clear acceptance criteria
    - Identify dependencies between tasks
-3. **Create phase folder**: `.agents/artifacts/phases/phase-{number}-{name}/`
+3. **Create phase folder**
 4. **Create phase.md**: Initialize with phase header and empty Tasks section
 5. **For each task**: Use `create-task` skill to create the task artifacts
    - Provide: description, phase folder, dependencies
@@ -64,6 +66,11 @@ Dependencies: p{number}-task-001
 - Keep tasks small enough for one dev-cycle
 - Order tasks by dependencies (independent tasks first)
 - Be specific — vague tasks lead to scope creep
+
+## Error Handling
+
+- Phase folder already exists → prompt: add to existing or abort?
+- Invalid phase number → fail with: "Phase number must be two digits (01-99)"
 
 ## Related Skills
 

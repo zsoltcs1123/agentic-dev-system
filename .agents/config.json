@@ -1,5 +1,6 @@
 {
   "tasks": {
     "fields": ["id", "description", "phase", "state", "priority"]
-  }
+  },
+  "hooks": {}
 }

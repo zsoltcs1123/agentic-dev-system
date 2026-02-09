@@ -2,7 +2,7 @@
 name: code-review
 description: Reviews code changes for quality issues and rule compliance. Use when asked to "review code", "check my changes", or as a quality gate after implementation. Saves structured report to task artifacts.
 metadata:
-  version: "0.3.0"
+  version: "0.1.0"
 ---
 
 # Code Review
@@ -22,8 +22,10 @@ Quality gate that reviews code changes and saves a structured report.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions and output limits.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Get the diff**: Staged changes or specified files
 4. **Read rules** from `.agents/rules/` (general + language-specific)
 5. **Review against checklist**:
@@ -70,6 +72,17 @@ Date: {YYYY-MM-DD}
 - Description: {what's wrong}
 - Suggestion: {how to fix}
 ```
+
+## Error Handling
+
+- No diff/changes to review → report: "No staged changes to review"
+- Phase folder not found → fail with: "Phase folder not found for {task-id}"
+- State file missing → create minimal state.json with current state
+
+## Output Limits
+
+- Max 10 issues per report
+- If more issues exist, summarize: "...and {N} more low-severity issues"
 
 ## Important
 

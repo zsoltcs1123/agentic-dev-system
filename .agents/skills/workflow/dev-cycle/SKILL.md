@@ -2,7 +2,7 @@
 name: dev-cycle
 description: Orchestrates the full development cycle for a single task. Use when asked to "run dev-cycle", "complete task-XXX", or processing tasks from a phase. Sequences Plan → Implement → Review → Verify → Document → Commit → Push-PR with gate enforcement.
 metadata:
-  version: "0.4.0"
+  version: "0.1.0"
 ---
 
 # Dev Cycle
@@ -26,7 +26,6 @@ Orchestrates the complete development workflow for a single task.
 ├── p01-task-001-plan.md
 ├── p01-task-001-review.md
 ├── p01-task-001-verification.md
-├── p01-task-001-test-results.md   # Optional
 └── p01-task-001-state.json
 ```
 
@@ -41,6 +40,13 @@ Plan → Implement → Review → Verify → Document → Commit → Push-PR
 ```
 
 ## Procedure
+
+See `.agents/AGENTS.md` for path conventions.
+
+### 0. Pre-flight
+
+- Check `dependencies` in state.json
+- If any dependency task not DONE → fail with: "Blocked by: {task-ids}"
 
 ### 1. Plan
 
@@ -130,3 +136,11 @@ Update `{task-id}-state.json` after each step:
 
 - `planner` — can run in main context
 - `implementer` — can run in main context
+
+## Hooks
+
+Check `.agents/config.json` for optional hooks after each step:
+
+- `afterPlan`, `afterImplement`, `afterReview`, `afterVerify`, `beforeCommit`
+- Run hook script if defined
+- Continue on success, fail pipeline on error

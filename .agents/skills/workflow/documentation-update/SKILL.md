@@ -22,8 +22,10 @@ Keeps documentation in sync with code changes.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Identify doc files**: README, API docs, architecture docs, etc.
 4. **Review code changes**: Understand what changed
 5. **Determine updates needed**:
@@ -48,6 +50,11 @@ Keeps documentation in sync with code changes.
 - Auto-generated docs (regenerate instead)
 - Changelog (handled separately)
 - Version numbers (handled by release process)
+
+## Error Handling
+
+- No docs exist → report: "No documentation files found to update"
+- No code changes to document → skip with: "No changes require documentation updates"
 
 ## Important
 

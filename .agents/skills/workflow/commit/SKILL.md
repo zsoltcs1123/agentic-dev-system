@@ -22,8 +22,10 @@ Stages and commits changes for a completed task.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Review changes**: Run `git status` to see pending changes
 4. **Stage changes**: `git add` relevant files only
 5. **Compose message**: Follow format below, reference task ID
@@ -39,6 +41,11 @@ Stages and commits changes for a completed task.
 ```
 
 **Types**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
+
+## Error Handling
+
+- Nothing to commit → report: "No changes to commit"
+- Untracked secret files detected → warn and exclude from commit
 
 ## Important
 

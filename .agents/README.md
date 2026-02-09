@@ -15,6 +15,7 @@ A portable, composable framework for AI-assisted development workflows. Works wi
 
 ```
 .agents/
+├── AGENTS.md     # Machine-readable conventions (paths, limits, hooks)
 ├── config.json   # System configuration
 ├── skills/       # Workflows (the logic)
 ├── agents/       # Subagent definitions (thin wrappers)
@@ -230,6 +231,20 @@ Task fields are configurable in `config.json`. Example adding custom fields:
   }
 }
 ```
+
+### Hooks
+
+Optional hooks run after pipeline steps. Configure in `config.json`:
+
+```json
+{
+  "hooks": {
+    "afterReview": ".agents/scripts/security-scan.sh"
+  }
+}
+```
+
+Available hooks: `afterPlan`, `afterImplement`, `afterReview`, `afterVerify`, `beforeCommit`
 
 ### GitHub Integration
 

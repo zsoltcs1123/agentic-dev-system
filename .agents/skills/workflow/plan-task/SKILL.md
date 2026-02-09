@@ -2,7 +2,7 @@
 name: plan-task
 description: Creates a structured implementation plan for a coding task. Use when asked to "plan pXX-task-XXX", create an implementation plan, or before starting complex development work. Analyzes requirements and codebase context.
 metadata:
-  version: "0.2.0"
+  version: "0.1.0"
 ---
 
 # Plan Task
@@ -22,8 +22,10 @@ Creates a structured implementation plan before coding begins.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions and output limits.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Clarify requirements**: Ensure the task description is clear. Ask if ambiguous.
 4. **Analyze codebase**:
    - Find similar patterns in the codebase
@@ -72,6 +74,12 @@ Creates a structured implementation plan before coding begins.
 | ------- | --------------- |
 | {Issue} | {How to handle} |
 ```
+
+## Error Handling
+
+- Plan already exists → prompt: overwrite or skip?
+- Phase not found → fail with: "Phase folder not found for {task-id}"
+- Ambiguous requirements → ask user to clarify before proceeding
 
 ## Important
 

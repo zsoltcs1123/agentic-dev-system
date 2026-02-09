@@ -1,2 +1,4 @@
 - Specify subagent llms for review/verify (haiku maybe)
 - Subagents according to cursor spec
+- References on HOW to do each step? plan, review etc.. (project specific)
+- Install agentic-dev-system skill

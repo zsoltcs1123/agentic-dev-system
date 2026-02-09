@@ -2,7 +2,7 @@
 name: implement-task
 description: Implements a single task by executing its saved plan file. Use when asked to "implement task-XXX", execute a plan, or write code for a planned task. Writes code following project rules.
 metadata:
-  version: "0.2.0"
+  version: "0.1.0"
 ---
 
 # Implement Task
@@ -21,8 +21,10 @@ Executes an existing implementation plan by writing code.
 
 ## Procedure
 
-1. **Parse task ID**: Extract phase number from prefix (e.g., `p01-task-001` → phase `01`)
-2. **Locate phase folder**: `.agents/artifacts/phases/phase-{number}-*/`
+See `.agents/AGENTS.md` for path conventions.
+
+1. **Parse task ID**: Extract phase number from prefix
+2. **Locate phase folder**
 3. **Read the plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
 4. **Verify plan is current**: If plan references files/patterns that no longer exist, stop and flag for re-planning
 5. **Read relevant coding rules** from `.agents/rules/`
@@ -39,6 +41,14 @@ Executes an existing implementation plan by writing code.
 - Apply project rules from `.agents/rules/`
 - Keep changes minimal and focused
 - If the plan is unclear, ask before guessing
+
+## Error Handling
+
+- Plan file not found → fail with: "No plan found for {task-id}. Run plan-task first."
+- Phase folder not found → fail with: "Phase folder not found for {task-id}"
+- Plan is stale (references non-existent files) → fail with: "Plan references outdated files. Re-run plan-task."
+- State file missing → create minimal state.json with current state
+- Implementation blocked by missing dependency → fail with: "Blocked: {dependency} not available"
 
 ## Important
 

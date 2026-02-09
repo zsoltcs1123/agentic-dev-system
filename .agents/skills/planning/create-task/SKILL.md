@@ -27,6 +27,8 @@ Creates a standardized task from various input sources.
 
 ## Procedure
 
+See `.agents/AGENTS.md` for path conventions.
+
 1. **Parse input**: Extract task info from prompt or structured input
 2. **Enrich if needed**: If input is vague:
    - Light codebase scan to gather context (relevant files, existing patterns)
