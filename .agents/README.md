@@ -6,11 +6,10 @@ A portable, composable framework for AI-assisted development workflows. Works wi
 
 1. **Single source of truth** — Skills and rules live in `.agents/`, agent-specific folders use symlinks
 2. **Portable** — No vendor lock-in; any agent that reads markdown works
-3. **Project tracker integration** - Adapt to your project tracker of choice (GitHub Projects, Linear, etc.)
-4. **Lean context** — `AGENTS.md` files are brief; details live in skills/rules
-5. **Composable** — Every skill works standalone or as part of the dev-cycle orchestrator
-6. **State in files** — All task artifacts grouped by phase in `.agents/artifacts/phases/`
-7. **Portable skills** — Skills contain minimal, generic instructions. Project-specific conventions belong in `.agents/rules/`
+3. **Lean context** — `AGENTS.md` files are brief; details live in skills/rules
+4. **Composable** — Every skill works standalone or as part of the dev-cycle orchestrator
+5. **State in files** — All task artifacts grouped by phase in `.agents/artifacts/phases/`
+6. **Portable skills** — Skills contain minimal, generic instructions. Project-specific conventions belong in `.agents/rules/`
 
 ## Structure
 
@@ -120,6 +119,7 @@ agent -p "Follow .agents/skills/workflow/dev-cycle/SKILL.md for task: p01-task-0
 | ----------------- | ------------------ |
 | `project-planner` | Strategic planning |
 | `phase-breakdown` | Roadmap → Tasks    |
+| `create-task`     | Task factory       |
 
 ### Workflow
 
@@ -133,14 +133,6 @@ agent -p "Follow .agents/skills/workflow/dev-cycle/SKILL.md for task: p01-task-0
 | `commit`               | Stage and commit   |
 | `push-pr`              | Push and create PR |
 | `dev-cycle`            | Orchestrator       |
-
-### Tracker
-
-| Skill                | Purpose              |
-| -------------------- | -------------------- |
-| `sync-tasks`         | Phase → tracker      |
-| `add-task`           | Add task to tracker  |
-| `update-task-status` | Sync state → tracker |
 
 ## Subagents
 
@@ -219,46 +211,25 @@ State file example (`.agents/artifacts/phases/phase-01-core/tasks/p01-task-001/p
 
 System settings live in `.agents/config.json`.
 
-### Project Tracker
+### Task Schema
 
-Set `tracker.adapter` to the name of your tracker adapter:
+Task fields are configurable in `config.json`. Example adding custom fields:
 
 ```json
 {
-  "tracker": {
-    "adapter": "github-projects"
+  "tasks": {
+    "fields": [
+      "id",
+      "description",
+      "phase",
+      "state",
+      "priority",
+      "assignee",
+      "estimate"
+    ]
   }
 }
 ```
-
-Set to `"none"` to disable tracker integration (local-only mode).
-
-The system integrates with external project trackers (GitHub Projects, Linear, etc.) via an adapter pattern:
-
-```
-phase-breakdown
-      │
-      v
-phases/phase-XX-name/phase.md
-      │
-      ├──────────────────┬──────────────────┐
-      v                  v                  v
- sync-tasks          add-task       update-task-status
-      │                  │                  │
-      └──────────────────┴──────────────────┘
-                         │
-                         v
-                   config.json
-                  adapter: "..."
-                         │
-         ┌───────────────┼───────────────┐
-         v               v               v
-  github-projects     linear          custom
-```
-
-Each skill reads `.agents/config.json` for the active adapter name, then loads adapter-specific instructions from `adapters/{adapter-name}.md` within the skill folder.
-
-To add a new tracker: copy `adapters/_template.md` in any tracker skill, rename to `{tracker-name}.md`, fill in the commands, and set the adapter name in `config.json`.
 
 ### GitHub Integration
 
@@ -314,6 +285,46 @@ Rules in `.agents/rules/` define coding standards. One file per language or topi
 ```
 
 Keep rules actionable and concise. Agents have limited context.
+
+## Project Tracker Integration
+
+Tracker integration is **not baked in** — it lives outside the core system as scripts you run manually, in CI, or via [Cursor hooks](https://cursor.com/docs/agent/hooks).
+
+The system outputs standard file formats (`phase.md`, `state.json`) that scripts can consume:
+
+```
+phase-breakdown (LLM)
+      │
+      v
+phases/phase-XX-name/phase.md    ← Standard format
+      │
+      v
+sync-phase.sh (script)           ← Your automation
+      │
+      v
+GitHub Projects / Linear / etc.
+```
+
+### Integration Options
+
+**Manual/CI** — Run scripts when needed or on push/merge.
+
+**Cursor Hooks** — Auto-sync on agent events:
+
+- `afterFileEdit` — trigger when `state.json` changes
+- `stop` — sync status when agent completes a task
+
+### Sample Scripts
+
+See `scripts/gh-tracker/` for GitHub CLI examples:
+
+| Script             | Purpose                                            |
+| ------------------ | -------------------------------------------------- |
+| `sync-phase.sh`    | Parse `phase.md` → create items in GitHub Projects |
+| `update-status.sh` | Sync `state.json` → GitHub Projects status         |
+| `add-task.sh`      | Create task locally + in GitHub Projects           |
+
+Copy to your repo (e.g., `.github/scripts/`) and customize for your tracker.
 
 ## Future Ideas
 

@@ -28,11 +28,10 @@ Converts a ROADMAP phase into discrete, implementable tasks.
    - Tasks should have clear acceptance criteria
    - Identify dependencies between tasks
 3. **Create phase folder**: `.agents/artifacts/phases/phase-{number}-{name}/`
-4. **For each task**:
-   - Assign phase-prefixed ID: `p{number}-task-XXX`
-   - Write clear, actionable description
-   - Note dependencies (using full prefixed IDs)
-5. **Save** to `{phase-folder}/phase.md`
+4. **Create phase.md**: Initialize with phase header and empty Tasks section
+5. **For each task**: Use `create-task` skill to create the task artifacts
+   - Provide: description, phase folder, dependencies
+   - `create-task` handles ID generation, state file, and phase.md entry
 
 ## Task ID Format
 
@@ -65,3 +64,7 @@ Dependencies: p{number}-task-001
 - Keep tasks small enough for one dev-cycle
 - Order tasks by dependencies (independent tasks first)
 - Be specific — vague tasks lead to scope creep
+
+## Related Skills
+
+- `create-task` — Creates individual task artifacts (used by this skill)
