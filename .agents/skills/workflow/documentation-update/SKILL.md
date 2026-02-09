@@ -24,17 +24,19 @@ Keeps documentation in sync with code changes.
 
 See `.agents/AGENTS.md` for path conventions.
 
+1. **Find relevant rules** in `.agents/rules/`:
+   - Documentation
 1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Identify doc files**: README, API docs, architecture docs, etc.
-4. **Review code changes**: Understand what changed
-5. **Determine updates needed**:
+1. **Locate phase folder**
+1. **Identify doc files**: README, API docs, architecture docs, etc.
+1. **Review code changes**: Understand what changed
+1. **Determine updates needed**:
    - New features → add documentation
    - Changed behavior → update existing docs
    - Removed features → remove or mark deprecated
-6. **Update docs**: Keep changes minimal and focused
-7. **Verify accuracy**: Ensure examples still work
-8. **Update task state** to DOCUMENTED
+1. **Update docs**: Keep changes minimal and focused
+1. **Verify accuracy**: Ensure examples still work
+1. **Update task state** to DOCUMENTED
 
 ## Scope
 

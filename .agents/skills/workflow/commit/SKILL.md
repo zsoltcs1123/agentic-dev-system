@@ -22,15 +22,17 @@ Stages and commits changes for a completed task.
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions.
+See `.agents/AGENTS.md` for path conventions and rules loading.
 
-1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Review changes**: Run `git status` to see pending changes
-4. **Stage changes**: `git add` relevant files only
-5. **Compose message**: Follow format below, reference task ID
-6. **Commit**: Create commit with descriptive message
-7. **Update task state** to COMMITTED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
+1. **Find relevant rules** in `.agents/rules/`:
+   - Commit
+2. **Parse task ID**: Extract phase number from prefix
+3. **Locate phase folder**
+4. **Review changes**: Run `git status` to see pending changes
+5. **Stage changes**: `git add` relevant files only
+6. **Compose message**: Follow rule format, reference task ID
+7. **Commit**: Create commit with descriptive message
+8. **Update task state** to COMMITTED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
 
 ## Commit Message Format
 

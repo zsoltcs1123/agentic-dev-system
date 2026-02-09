@@ -21,13 +21,19 @@ Executes an existing implementation plan by writing code.
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions.
+See `.agents/AGENTS.md` for path conventions and rules loading.
 
-1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Read the plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
-4. **Verify plan is current**: If plan references files/patterns that no longer exist, stop and flag for re-planning
-5. **Read relevant coding rules** from `.agents/rules/`
+1. **Find relevant rules** in `.agents/rules/`:
+
+   - Implementation
+   - Coding standards
+   - Testing standards
+   - Language specific rules
+
+2. **Parse task ID**: Extract phase number from prefix
+3. **Locate phase folder**
+4. **Read the plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
+5. **Verify plan is current**: If plan references files/patterns that no longer exist, stop and flag for re-planning
 6. **Implement step by step**:
    - Follow the plan's steps in order
    - Check each acceptance criterion as you go

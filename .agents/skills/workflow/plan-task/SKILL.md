@@ -22,19 +22,24 @@ Creates a structured implementation plan before coding begins.
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions and output limits.
+See `.agents/AGENTS.md` for path conventions, output limits, and rules loading.
 
-1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Clarify requirements**: Ensure the task description is clear. Ask if ambiguous.
-4. **Analyze codebase**:
+1. **Find relevant rules** in `.agents/rules/`:
+   - Planning
+   - Coding standards
+   - Testing standards
+   - Language specific rules
+2. **Parse task ID**: Extract phase number from prefix
+3. **Locate phase folder**
+4. **Clarify requirements**: Ensure the task description is clear. Ask if ambiguous.
+5. **Analyze codebase**:
    - Find similar patterns in the codebase
    - Identify files likely to be affected
    - Check for relevant conventions or abstractions
-5. **Create task folder** inside phase: `.agents/artifacts/phases/phase-{number}-{name}/tasks/{task-id}/`
-6. **Create plan** using the format below
-7. **Save** to `{task-folder}/{task-id}-plan.md`
-8. **Update task state** to PLANNED
+6. **Create task folder** inside phase: `.agents/artifacts/phases/phase-{number}-{name}/tasks/{task-id}/`
+7. **Create plan** using the format below
+8. **Save** to `{task-folder}/{task-id}-plan.md`
+9. **Update task state** to PLANNED
 
 ## Plan Format
 
@@ -77,6 +82,7 @@ See `.agents/AGENTS.md` for path conventions and output limits.
 
 ## Error Handling
 
+- Task doesn't exists → ask if it should be created - use create-task skill
 - Plan already exists → prompt: overwrite or skip?
 - Phase not found → fail with: "Phase folder not found for {task-id}"
 - Ambiguous requirements → ask user to clarify before proceeding

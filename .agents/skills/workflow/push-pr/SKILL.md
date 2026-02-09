@@ -28,21 +28,23 @@ Pushes the current branch and creates a pull request.
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions.
+See `.agents/AGENTS.md` for path conventions and rules loading.
 
-1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Determine branch name**:
+1. **Find relevant rules** in `.agents/rules/`:
+   - Pull requests
+2. **Parse task ID**: Extract phase number from prefix
+3. **Locate phase folder**
+4. **Determine branch name**:
    - Use existing branch if not on main/master
    - Create task branch if on main/master: `task/{task-id}`
-4. **Push branch** to remote with `-u` flag
-5. **Check for existing PR**: If PR exists for branch, return existing URL
-6. **Create pull request** via GitHub MCP or `gh` CLI:
+5. **Push branch** to remote with `-u` flag
+6. **Check for existing PR**: If PR exists for branch, return existing URL
+7. **Create pull request** via GitHub MCP or `gh` CLI:
    - Title: Task description or commit message
-   - Body: Summary + plan reference + test plan
+   - Body: Follow rule format (summary + plan reference + test plan)
    - Base: main/master (or configured default)
-7. **Update task state** to PR_CREATED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
-8. **Return PR URL**
+8. **Update task state** to PR_CREATED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
+9. **Return PR URL**
 
 ## Branch Naming
 

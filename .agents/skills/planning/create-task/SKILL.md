@@ -93,3 +93,6 @@ Dependencies: none
 - Default state is always `PENDING`
 - Default priority is `medium` unless specified
 - Do not perform deep analysis — that's `plan-task`'s responsibility
+- Single logical unit of work
+- Completable in one session
+- Split larger work into subtasks

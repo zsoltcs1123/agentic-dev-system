@@ -9,17 +9,22 @@ A portable, composable framework for AI-assisted development workflows. Works wi
 3. **Lean context** — `AGENTS.md` files are brief; details live in skills/rules
 4. **Composable** — Every skill works standalone or as part of the dev-cycle orchestrator
 5. **State in files** — All task artifacts grouped by phase in `.agents/artifacts/phases/`
-6. **Portable skills** — Skills contain minimal, generic instructions. Project-specific conventions belong in `.agents/rules/`
+6. **Portable skills** — Skills contain the logic; rules contain project-specific criteria
+7. **Sensible defaults** — Ships with generic rules that work out of the box; extend as needed
 
 ## Structure
 
 ```
 .agents/
-├── AGENTS.md     # Machine-readable conventions (paths, limits, hooks)
+├── AGENTS.md     # Machine-readable conventions (paths, limits, hooks, rules loading)
 ├── config.json   # System configuration
 ├── skills/       # Workflows (the logic)
+│   ├── planning/
+│   │   └── {skill-name}/SKILL.md
+│   └── workflow/
+│       └── {skill-name}/SKILL.md
 ├── agents/       # Subagent definitions (thin wrappers)
-├── rules/        # Coding conventions
+├── rules/        # Coding standards + skill-specific rules
 └── artifacts/
     └── phases/
         └── phase-01-core/
@@ -285,21 +290,27 @@ Workflows in `.agents/skills/`. Read SKILL.md in each folder when needed.
 
 ### Rules Files
 
-Rules in `.agents/rules/` define coding standards. One file per language or topic.
+Rules in `.agents/rules/` define both coding standards and skill-specific criteria. Skills dynamically load relevant rules.
 
-```markdown
-# [Language/Topic] Rules
+To have an easy way for the LLM to load the rules, use the naming convention below:
 
-## [Category]
-
-- [Rule]: [Brief rationale]
-
-## Anti-patterns
-
-- [What to avoid]: [Why]
+```
+.agents/rules/
+├── coding-standards.md      # General coding conventions
+├── testing-standards.md     # Test patterns and coverage
+├── code-review.md           # Review criteria (security, performance, etc.)
+├── code-verification.md     # Verification checklist
+├── commit.md                # Commit message format
+├── pull-requests.md         # PR description guidelines
+├── planning.md              # Architecture and planning patterns
+└── implementation.md        # Implementation patterns
+└── csharp.md                # Language specific rule
+└── typescript.md            # Language specific rule
 ```
 
-Keep rules actionable and concise. Agents have limited context.
+**Sensible defaults:** The system ships with generic rules that work for any project. Extend them with project-specific criteria as needed (e.g., add "PII fields must use encryption helper" to `code-review.md`).
+
+**Dynamic loading:** Each skill specifies which rules it needs. If no matching rule file exists, the skill uses sensible defaults. See `.agents/AGENTS.md` for details.
 
 ## Project Tracker Integration
 

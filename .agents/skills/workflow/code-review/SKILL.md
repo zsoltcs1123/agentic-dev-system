@@ -22,19 +22,17 @@ Quality gate that reviews code changes and saves a structured report.
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions and output limits.
+See `.agents/AGENTS.md` for path conventions, output limits, and rules loading.
 
-1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Get the diff**: Staged changes or specified files
-4. **Read rules** from `.agents/rules/` (general + language-specific)
-5. **Review against checklist**:
-   - Rule violations (naming, structure, patterns)
-   - Logic errors or potential bugs
-   - Missing error handling or edge cases
-   - Security issues (hardcoded secrets, injection risks)
-   - Performance concerns (N+1 queries, unnecessary loops)
-   - Test coverage gaps (if tests exist)
+1. **Find relevant rules** in `.agents/rules/`:
+   - Coding standards
+   - Testing standards
+   - Code review
+   - Language specific rules
+2. **Parse task ID**: Extract phase number from prefix
+3. **Locate phase folder**
+4. **Get the diff**: Staged changes, diff against main or specified files
+5. **Review against rule criteria** (security, performance, correctness, style)
 6. **Classify severity**:
    - **High**: Bugs, security issues, data loss risks — must fix
    - **Medium**: Rule violations, poor patterns — should fix

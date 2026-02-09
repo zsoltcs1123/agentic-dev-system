@@ -1,4 +1,4 @@
-# General Rules
+# Coding Standards
 
 ## Principles
 

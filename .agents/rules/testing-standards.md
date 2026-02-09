@@ -1,4 +1,4 @@
-# Testing Rules
+# Testing Standards
 
 ## Structure
 

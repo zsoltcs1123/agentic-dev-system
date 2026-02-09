@@ -1,7 +1,5 @@
 # AGENTS.md
 
-Machine-readable conventions for skills.
-
 ## Paths
 
 - Phases: `.agents/artifacts/phases/phase-{NN}-{name}/`
@@ -21,6 +19,16 @@ Machine-readable conventions for skills.
 
 - Review issues: max 10 per report
 - Log/error output: max 50 lines
+
+## Rules Loading
+
+Skills dynamically load rules from `.agents/rules/`. Each skill specifies which rules it needs.
+
+- Search `.agents/rules/` for matching files by name/topic
+- IMPORTANT: if no matching rule file exists, use sensible defaults
+- Rules are additive — load all that apply
+
+Example: `code-review` loads `coding-standards.md`, `testing-standards.md`, and `code-review.md`.
 
 ## Hooks
 

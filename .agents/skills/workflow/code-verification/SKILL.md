@@ -21,23 +21,25 @@ Final gate that verifies implementation matches the plan.
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions.
+See `.agents/AGENTS.md` for path conventions and rules loading.
 
-1. **Parse task ID**: Extract phase number from prefix
-2. **Locate phase folder**
-3. **Read plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
-4. **Get the diff**: Staged changes or specified files
-5. **Verify plan compliance**:
+1. **Find relevant rules** in `.agents/rules/`:
+   - Code verification
+2. **Parse task ID**: Extract phase number from prefix
+3. **Locate phase folder**
+4. **Read plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
+5. **Get the diff**: Staged changes or specified files
+6. **Verify against rule criteria**:
    - All planned steps completed?
    - All files in "Files to Modify" touched?
    - Any unplanned changes? (flag for justification)
    - Approach matches what was planned?
-6. **Check acceptance criteria**: Each criterion from the plan should be verifiable
-7. **Determine verdict**:
+7. **Check acceptance criteria**: Each criterion from the plan should be verifiable
+8. **Determine verdict**:
    - **PASS**: All planned items done, acceptance criteria met
    - **ISSUES**: Missing items, unplanned changes, or criteria not met
-8. **Save report** to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
-9. **Update task state** to VERIFIED
+9. **Save report** to `{phase-folder}/tasks/{task-id}/{task-id}-verification.md`
+10. **Update task state** to VERIFIED
 
 ## Report Format
 
