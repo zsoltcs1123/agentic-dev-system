@@ -1,107 +1,112 @@
 ---
 name: dev-cycle
-description: Orchestrates the full development cycle for a single task. Use when asked to "run dev-cycle", "complete task-XXX", or processing tasks from a phase. Sequences Plan → Implement → Review → Verify → Document → Commit → Push-PR with gate enforcement.
+description: Orchestrates the full development cycle for a task. Use when asked to "run dev-cycle", "complete task-XXX", "execute task", or "work on task".
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Dev Cycle
 
-Orchestrates the complete development workflow for a single task.
+Orchestrates the complete development workflow for a task. Owns all state management and artifact storage.
 
 ## When to Use
 
 - User asks to "run dev-cycle for pXX-task-XXX"
-- Processing a task from a phase file
+- User asks to "dev-cycle: {user request}" with a new task
 - Running end-to-end task completion
 
 ## Input
 
-- Task ID (phase-prefixed, e.g., `p01-task-001`)
+- **Task ID** (e.g., `p01-task-001`) — resumes from current state
+- OR **User request** + **Phase** — creates task first, then runs from PENDING
 
-## Artifact Location
-
-```
-.agents/artifacts/phases/phase-01-core/tasks/p01-task-001/
-├── p01-task-001-plan.md
-├── p01-task-001-review.md
-├── p01-task-001-verification.md
-└── p01-task-001-state.json
-```
-
-Phase number extracted from task ID prefix (e.g., `p01-task-001` → phase `01`).
+User request can be messy or informal. The `create-task` skill synthesizes a clean description.
 
 ## Workflow
 
 ```
 Plan → Implement → Review → Verify → Document → Commit → Push-PR
-                      │         │
-                      └─────────┴──▶ (failure: fix and retry gate)
 ```
+
+Linear flow. On any gate failure (Review or Verify), stop and report. User fixes manually and re-runs.
 
 ## Procedure
 
 See `.agents/AGENTS.md` for path conventions.
 
-### 0. Pre-flight
+### 0. Resolve Task Context
 
-- Check `dependencies` in state.json
-- If any dependency task not DONE → fail with: "Blocked by: {task-ids}"
+1. **Detect input type**:
+   - If matches `pXX-task-XXX` pattern → existing task, go to step 3
+   - Otherwise → new task from user request, go to step 2
+2. **Create task** (if user request provided):
+   - Run `create-task` skill with user request and phase
+   - `create-task` synthesizes a clean description from the request
+   - Use returned task ID
+3. Parse task ID: Extract phase number from prefix
+4. Locate phase folder: `.agents/artifacts/phases/phase-{XX}/`
+5. Locate or create task folder: `{phase}/tasks/{task-id}/`
+6. Read `state.json` to determine current state
 
-### 1. Plan
+### 1. Resume from Current State
 
-- **Run** `plan-task` skill OR invoke `planner` subagent
-- **Skip** if plan already exists
-- **Save** to `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
-- **Update state**: PLANNED
+Skip completed steps based on state:
 
-### 2. Implement
+| State       | Start At                                  |
+| ----------- | ----------------------------------------- |
+| PENDING     | Plan                                      |
+| PLANNED     | Implement                                 |
+| IMPLEMENTED | Review                                    |
+| REVIEWED    | Verify                                    |
+| VERIFIED    | Document                                  |
+| DOCUMENTED  | Commit                                    |
+| COMMITTED   | Push-PR                                   |
+| PR_CREATED  | Already complete — output status and exit |
 
-- **Run** `implement-task` skill OR invoke `implementer` subagent
-- **Skip** if code changes already exist
-- **Read** plan, follow rules in `.agents/rules/`
-- **Update state**: IMPLEMENTED
+### 2. Execute Steps
 
-### 3. Review (Gate)
+#### Plan
 
-- **Run** `code-review` skill OR invoke `reviewer` subagent
-- **Save** to `{task-id}-review.md`
-- **Must PASS** to proceed
-- **On ISSUES**: Fix and re-run review only
-- **Update state**: REVIEWED
+- Run `plan` skill with task description
+- Save output to `{task-id}-plan.md`
+- Update state → PLANNED
 
-### 4. Verify (Gate)
+#### Implement
 
-- **Run** `code-verification` skill OR invoke `verifier` subagent
-- **Save** to `{task-id}-verification.md`
-- **Must PASS** to proceed
-- **On ISSUES**: Fix and re-run verify only
-- **Update state**: VERIFIED
+- Run `implement-task` skill with plan file path
+- Update state → IMPLEMENTED
 
-### 5. Document
+#### Review (Gate)
 
-- **Run** `documentation-update` skill
-- **Update** affected docs
-- **Update state**: DOCUMENTED
+- Run `code-review` skill
+- Save output to `{task-id}-review.md`
+- **If PASS**: Update state → REVIEWED
+- **If ISSUES**: STOP. Report issues. User fixes and re-runs dev-cycle.
 
-### 6. Commit
+#### Verify (Gate)
 
-- **Run** `commit` skill
-- **Stage and commit** with descriptive message
-- **Update state**: COMMITTED
+- Read acceptance criteria from `{task-id}-plan.md`
+- Run `code-verification` skill with the criteria
+- Save output to `{task-id}-verification.md`
+- **If PASS**: Update state → VERIFIED
+- **If ISSUES**: STOP. Report issues. User fixes and re-runs dev-cycle.
 
-### 7. Push-PR
+#### Document
 
-- **Run** `push-pr` skill
-- **Push** branch and create pull request
-- **Update state**: PR_CREATED
+- Run `documentation-update` skill
+- Update state → DOCUMENTED
 
-## Gate Enforcement
+#### Commit
 
-- Review must PASS before Verify
-- Verify must PASS before Document
-- On failure: fix and retry failed gate only (not full re-plan)
-- Max retries: 2 per gate, then escalate to human
+- Run `commit` skill
+- Update state → COMMITTED
+- Record commit hash in stateHistory
+
+#### Push-PR
+
+- Run `push-pr` skill
+- Update state → PR_CREATED
+- Record PR URL in stateHistory
 
 ## State Tracking
 
@@ -110,37 +115,71 @@ Update `{task-id}-state.json` after each step:
 ```json
 {
   "id": "p01-task-001",
-  "phase": "phase-01-core",
-  "state": "PR_CREATED",
+  "description": "Add user authentication",
+  "phase": "phase-01",
+  "state": "REVIEWED",
   "stateHistory": [
     { "state": "PENDING", "timestamp": "..." },
     { "state": "PLANNED", "timestamp": "..." },
     { "state": "IMPLEMENTED", "timestamp": "..." },
-    { "state": "REVIEWED", "timestamp": "...", "result": "PASS" },
-    { "state": "VERIFIED", "timestamp": "...", "result": "PASS" },
-    { "state": "DOCUMENTED", "timestamp": "..." },
-    { "state": "COMMITTED", "timestamp": "...", "commit": "abc123" },
-    { "state": "PR_CREATED", "timestamp": "...", "pr": "https://..." }
+    { "state": "REVIEWED", "timestamp": "...", "result": "PASS" }
   ]
 }
 ```
 
+For gates, include `result: "PASS"` or `result: "ISSUES"` in history.
+For commit, include `commit: "{hash}"`.
+For push-pr, include `pr: "{url}"`.
+
+## Artifact Paths
+
+```
+.agents/artifacts/phases/phase-{XX}/tasks/{task-id}/
+├── {task-id}-plan.md
+├── {task-id}-review.md
+├── {task-id}-verification.md
+└── {task-id}-state.json
+```
+
+## Error Handling
+
+- Description provided but no phase → ask user to specify phase
+- Phase folder not found → fail with: "Phase folder not found for {task-id}"
+- Task folder missing → create it
+- State file missing → create with PENDING state
+- Gate returns ISSUES → stop, report, exit (no automatic retry)
+
+## On Failure
+
+When a gate fails:
+
+1. State stays at previous value (IMPLEMENTED for Review, REVIEWED for Verify)
+2. Report the issues to user
+3. User fixes manually
+4. User re-runs `dev-cycle` — it resumes from current state
+
+## Output Format
+
+```markdown
+## Dev Cycle: {COMPLETE|STOPPED|FAILED}
+
+Task: {task-id}
+Final State: {state}
+
+{If COMPLETE:}
+
+- PR: {pr-url}
+
+{If STOPPED (gate failure):}
+
+- Gate: {Review|Verify}
+- Issues: see {task-id}-review.md or {task-id}-verification.md
+
+{If FAILED:}
+
+- Error: {error-message}
+```
+
 ## Subagent Strategy
 
-**Required as subagents** (for isolation):
-
-- `reviewer` — quality gate needs clean context
-- `verifier` — compliance check needs clean context
-
-**Optional as subagents**:
-
-- `planner` — can run in main context
-- `implementer` — can run in main context
-
-## Hooks
-
-Check `.agents/config.json` for optional hooks after each step:
-
-- `afterPlan`, `afterImplement`, `afterReview`, `afterVerify`, `beforeCommit`
-- Run hook script if defined
-- Continue on success, fail pipeline on error
+For context isolation, run Review and Verify as subagents. Plan and Implement can run in main context.

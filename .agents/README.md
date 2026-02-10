@@ -2,356 +2,301 @@
 
 A portable, composable framework for AI-assisted development workflows. Works with Cursor, Claude Code, Codex, Gemini, or any agent that reads markdown.
 
-## Core Principles
+## Principles
 
-1. **Single source of truth** — Skills and rules live in `.agents/`, agent-specific folders use symlinks
+1. **Single source of truth** — Skills and rules live in `.agents/`; agent-specific folders use symlinks
 2. **Portable** — No vendor lock-in; any agent that reads markdown works
 3. **Lean context** — `AGENTS.md` files are brief; details live in skills/rules
 4. **Composable** — Every skill works standalone or as part of the dev-cycle orchestrator
 5. **State in files** — All task artifacts grouped by phase in `.agents/artifacts/phases/`
-6. **Portable skills** — Skills contain the logic; rules contain project-specific criteria
-7. **Sensible defaults** — Ships with generic rules that work out of the box; extend as needed
+
+## Quick Start
+
+### 0. Clone the repository
+
+```bash
+git clone https://github.com/your-username/agentic-dev-system.git
+cd agentic-dev-system
+```
+
+Copy the `.agents/` folder to your project.
+
+```bash
+cp -r .agents/ ~/projects/my-project/.agents/
+```
+
+### 1. Define Rules (optional)
+
+Create markdown files in `.agents/rules/` with your coding standards, then map them in `config.json`:
+
+```json
+"skillRules": {
+  "plan": ["coding-standards"],
+  "code-review": ["coding-standards", "code-review"]
+}
+```
+
+### 2. Install to Cursor
+
+```bash
+.agents/cursor-install.sh      # Linux/macOS
+.agents/cursor-install.ps1     # Windows
+```
+
+### 3. Use
+
+**Individual skills** — run any skill directly:
+
+```
+"Plan adding user authentication" or "/plan adding user authentication"
+"Review my changes" or "/review my changes"
+"Commit with message: Add auth middleware" or "/commit with message: Add auth middleware"
+```
+
+**Task mode** — create a task and run the full pipeline:
+
+```
+"/create task: Add user authentication"    → creates p01-task-001
+"/dev-cycle p01-task-001"          → runs Plan → Implement → Review → Verify → Document → Commit → Push-PR
+```
 
 ## Structure
 
 ```
 .agents/
-├── AGENTS.md     # Machine-readable conventions (paths, limits, hooks, rules loading)
-├── config.json   # System configuration
-├── skills/       # Workflows (the logic)
-│   ├── planning/
-│   │   └── {skill-name}/SKILL.md
-│   └── workflow/
-│       └── {skill-name}/SKILL.md
-├── agents/       # Subagent definitions (thin wrappers)
-├── rules/        # Coding standards + skill-specific rules
-└── artifacts/
-    └── phases/
-        └── phase-01-core/
-            ├── phase.md           # Phase description and task list
-            └── tasks/
-                └── p01-task-001/  # Task artifacts (plan, review, state)
+├── AGENTS.md         # Brief project context and pointers
+├── config.json       # System configuration (task fields, skill rules)
+├── skills/           # Workflows (the logic)
+│   ├── tasks/        # create-task
+│   └── workflow/     # plan, implement-task, code-review, etc.
+├── rules/            # User-defined rules (skill-specific criteria)
+└── artifacts/phases/ # Phase folders with tasks
 ```
 
 Agent-specific folders (`.cursor/`, `.claude/`, `.gemini/`) contain symlinks to `.agents/skills/`.
 
-## Dev-Cycle Pipeline
+## Installation
 
-Every task follows this pipeline:
+Install scripts create symlinks from agent-specific folders to `.agents/`, making skills and agents discoverable.
 
-```
-Plan ──▶ Implement ──▶ Review ──▶ Verify ──▶ Document ──▶ Commit ──▶ Push-PR
-                         │          │
-                         └──────────┴──▶ (failure: fix and retry)
-```
+### Cursor
 
-| Step      | Skill                  | Subagent      | Gate           |
-| --------- | ---------------------- | ------------- | -------------- |
-| Plan      | `plan-task`            | `planner`     | Human approval |
-| Implement | `implement-task`       | `implementer` | Lint/test pass |
-| Review    | `code-review`          | `reviewer`    | PASS required  |
-| Verify    | `code-verification`    | `verifier`    | PASS required  |
-| Document  | `documentation-update` | —             | None           |
-| Commit    | `commit`               | —             | None           |
-| Push-PR   | `push-pr`              | —             | None           |
+```bash
+# Linux/macOS
+.agents/cursor-install.sh
 
-**Gate enforcement:** Review must PASS before Verify. On failure, fix issues and re-run only the failed gate. Max 2 retries per gate, then escalate to human.
-
-**Subagent strategy:**
-
-- **Required as subagents:** Review, Verify (quality gates need context isolation)
-- **Optional as subagents:** Plan, Implement (can run in main context or as subagents)
-
-### Task State Machine
-
-```
-PENDING → PLANNED → IMPLEMENTED → REVIEWED → VERIFIED → DOCUMENTED → COMMITTED → PR_CREATED → DONE
-                          │            │
-                          └────────────┴──▶ (failure: back to IMPLEMENTED or BLOCKED)
+# Windows (PowerShell)
+.agents/cursor-install.ps1
 ```
 
-## Usage
+The script creates `.cursor/skills/{skill-name}` symlinks pointing to each skill folder, and `.cursor/rules` pointing to `.agents/rules`. Cursor auto-discovers these at runtime.
 
-### Usage Modes
+Subagents are also installed for each skill into `.cursor/agents/{subagent-name}`.
 
-**Cursor-native mode** — Use Cursor's built-in Plan Mode (Shift+Tab) for planning and its Build button for implementation. The remaining steps use the system's skills. Best for complex features with unanswered questions.
+Other agents (Claude Code, Codex, Gemini) are not yet supported but follow the same pattern.
 
-**Full system mode** — All steps use skills and subagents, including `plan-task` and `implement-task`. Best for well-defined tasks, CLI-driven workflows, and headless/CI execution.
+## Architecture
 
-Both modes share the same pipeline, artifact structure, and quality gates.
+**Layer 1: Pure Skills** — Stateless operations that work standalone. No task IDs required.
 
-### Composability
-
-Every skill works standalone. Use one skill, chain a few, or run the full dev-cycle — match your workflow to the task:
+**Layer 2: Task Orchestration** — `dev-cycle` provides task context, manages state, saves artifacts.
 
 ```
-# Single skill — quick code review on current changes
-"Review my changes"
-
-# Partial pipeline — already implemented, just need QA
-"Review my changes for p01-task-001"
-"Verify changes for p01-task-001"
-
-# Full dev-cycle — hands-off automation
-"Run dev-cycle for p01-task-001"
-```
-
-No lock-in to the full pipeline. Start small, add steps as needed.
-
-### Running Steps
-
-```
-# Individual steps (chat):
-"Plan p01-task-001: add user authentication"
-"Implement the plan for p01-task-001"
-"Review my changes for p01-task-001"
-"Verify changes for p01-task-001"
-"Update documentation"
-"Commit p01-task-001"
-"Push and create PR"
-
-# Full dev-cycle:
-"Run dev-cycle for p01-task-001"
-
-# CLI:
-agent -p "Follow .agents/skills/workflow/dev-cycle/SKILL.md for task: p01-task-001"
+Standalone:  User → Skill → Chat Output
+Task Mode:   User → dev-cycle → Skill → Artifacts
 ```
 
 ## Skills
 
-### Planning
+### Tasks
 
-| Skill             | Purpose            |
-| ----------------- | ------------------ |
-| `project-planner` | Strategic planning |
-| `phase-breakdown` | Roadmap → Tasks    |
-| `create-task`     | Task factory       |
+| Skill         | Purpose                  |
+| ------------- | ------------------------ |
+| `create-task` | Create standardized task |
 
 ### Workflow
 
-| Skill                  | Purpose            |
-| ---------------------- | ------------------ |
-| `plan-task`            | Create task plan   |
-| `implement-task`       | Execute plan       |
-| `code-review`          | Quality gate       |
-| `code-verification`    | Plan compliance    |
-| `documentation-update` | Keep docs in sync  |
-| `commit`               | Stage and commit   |
-| `push-pr`              | Push and create PR |
-| `dev-cycle`            | Orchestrator       |
+| Skill                  | Input              | Output             |
+| ---------------------- | ------------------ | ------------------ |
+| `plan`                 | description        | Plan markdown      |
+| `implement-task`       | plan               | Code changes       |
+| `code-review`          | changes (optional) | PASS/ISSUES report |
+| `code-verification`    | criteria or plan   | PASS/ISSUES report |
+| `documentation-update` | —                  | Updated docs       |
+| `commit`               | message (optional) | Commit hash        |
+| `push-pr`              | branch (optional)  | PR URL             |
+| `dev-cycle`            | task-id            | Full pipeline      |
 
-## Subagents
-
-Subagents are thin wrappers that delegate to skills. They provide context isolation, cost efficiency (faster models for focused tasks), and clean file-based handoffs.
-
-| Subagent      | Skill               | Model     | Required |
-| ------------- | ------------------- | --------- | -------- |
-| `planner`     | `plan-task`         | `default` | No       |
-| `implementer` | `implement-task`    | `default` | No       |
-| `reviewer`    | `code-review`       | `fast`    | Yes      |
-| `verifier`    | `code-verification` | `fast`    | Yes      |
-
-Subagent file format:
-
-```markdown
----
-name: reviewer
-description: Code quality review.
-model: fast
-tools: Read, Grep, Glob
----
-
-You are a code reviewer. Read and follow `.agents/skills/workflow/code-review/SKILL.md`.
-```
-
-## Artifacts & State
-
-Tasks are organized by phase. Each phase folder contains a `phase.md` and a `tasks/` subfolder:
+## Pipeline
 
 ```
-.agents/artifacts/phases/phase-01-core/
-├── phase.md              # Phase description and task list
-└── tasks/
-    └── p01-task-001/     # Task folder (phase-prefixed ID)
-        ├── p01-task-001-plan.md
-        ├── p01-task-001-review.md
-        ├── p01-task-001-verification.md
-        └── p01-task-001-state.json
+Plan → Implement → Review → Verify → Document → Commit → Push-PR
 ```
 
-### Task ID Format
+Linear flow. On gate failure, stop and report. User fixes and re-runs.
 
-Task IDs are prefixed with the phase number to prevent collisions and provide context:
+| Step      | Skill                  | Gate          |
+| --------- | ---------------------- | ------------- |
+| Plan      | `plan`                 | —             |
+| Implement | `implement-task`       | —             |
+| Review    | `code-review`          | PASS required |
+| Verify    | `code-verification`    | PASS required |
+| Document  | `documentation-update` | —             |
+| Commit    | `commit`               | —             |
+| Push-PR   | `push-pr`              | —             |
 
-| Phase    | Task ID Format | Example        |
-| -------- | -------------- | -------------- |
-| Phase 1  | `p01-task-XXX` | `p01-task-001` |
-| Phase 2  | `p02-task-XXX` | `p02-task-003` |
-| Phase 10 | `p10-task-XXX` | `p10-task-015` |
+**Gates:** Review and Verify are gates. If either returns ISSUES, dev-cycle stops. User fixes manually and re-runs dev-cycle to resume from current state. No automatic retry.
 
-**Cursor Plan Mode note:** Cursor saves plans to `~/.cursor/plans/` by default. After using Cursor's Plan Mode, manually save the plan markdown into the appropriate task folder to integrate with the task system.
+### Task States
+
+```
+PENDING → PLANNED → IMPLEMENTED → REVIEWED → VERIFIED → DOCUMENTED → COMMITTED → PR_CREATED → DONE
+```
+
+`DONE` is set externally (after PR merge or manual marking).
+
+## Usage
+
+### Standalone Skills
+
+Every skill works without a task ID:
+
+```
+"Review my changes"           → code-review outputs to chat
+"Plan adding user auth"       → plan outputs to chat
+"Commit my changes"           → commit runs directly
+```
+
+### Task Mode (dev-cycle)
+
+For structured task tracking:
+
+```
+"Run dev-cycle for p01-task-001"
+```
+
+dev-cycle handles: task context, artifact paths, state updates. Skills just do their job.
+
+### Composability
+
+Mix and match:
+
+```
+# Single skill
+"Review my changes"
+
+# Partial pipeline (already implemented)
+"Verify my changes against this plan: ..."
+
+# Full automation
+"Run dev-cycle for p01-task-001"
+```
+
+## Artifacts
+
+Tasks are organized by phase. To create a new phase, create the folder:
+
+```
+mkdir .agents/artifacts/phases/phase-01
+```
+
+Phase structure:
+
+```
+.agents/artifacts/phases/phase-01/
+├── phase.md              # Phase description and task list (optional)
+└── tasks/p01-task-001/   # Task artifacts
+    ├── p01-task-001-plan.md
+    ├── p01-task-001-review.md
+    ├── p01-task-001-verification.md
+    └── p01-task-001-state.json
+```
+
+**Task ID format:** `pXX-task-YYY` (phase-prefixed to prevent collisions)
 
 ### State File
-
-State file example (`.agents/artifacts/phases/phase-01-core/tasks/p01-task-001/p01-task-001-state.json`):
 
 ```json
 {
   "id": "p01-task-001",
   "description": "Add user authentication",
-  "phase": "phase-01-core",
-  "trackerId": "PVTI_abc123",
+  "phase": "phase-01",
   "state": "REVIEWED",
+  "priority": "high",
   "stateHistory": [
     { "state": "PENDING", "timestamp": "..." },
     { "state": "PLANNED", "timestamp": "..." },
     { "state": "IMPLEMENTED", "timestamp": "..." },
     { "state": "REVIEWED", "timestamp": "...", "result": "PASS" }
-  ],
-  "commits": ["abc123"],
-  "failures": []
+  ]
 }
 ```
 
+## Rules
+
+Rules are **optional and user-defined**. The `.agents/rules/` folder starts empty. Skills work without rules — they use sensible defaults.
+
+To customize skill behavior:
+
+1. Create a markdown file in `.agents/rules/` (e.g., `coding-standards.md`)
+2. Add the rule name to the skill's entry in `config.json` → `skillRules`
+3. Skills load rules at runtime; if a file doesn't exist, it's skipped
+
+Example: To add coding standards that `plan` and `code-review` should follow:
+
+```markdown
+<!-- .agents/rules/coding-standards.md -->
+
+# Coding Standards
+
+- Use TypeScript strict mode
+- Prefer composition over inheritance
+- All public functions must have JSDoc comments
+```
+
+Then in `config.json`:
+
+```json
+"skillRules": {
+  "plan": ["coding-standards"],
+  "code-review": ["coding-standards"]
+}
+```
+
+Both skills will now load and apply these standards.
+
 ## Configuration
 
-System settings live in `.agents/config.json`.
-
-### Task Schema
-
-Task fields are configurable in `config.json`. Example adding custom fields:
+Settings in `.agents/config.json`:
 
 ```json
 {
   "tasks": {
-    "fields": [
-      "id",
-      "description",
-      "phase",
-      "state",
-      "priority",
-      "assignee",
-      "estimate"
-    ]
+    "fields": ["priority", "assignee"]
+  },
+  "skillRules": {
+    "plan": ["planning", "coding-standards"],
+    "code-review": ["code-review", "coding-standards"],
+    "commit": ["commit"]
   }
 }
 ```
 
-### Hooks
+**Task fields:** Custom fields to add to tasks beyond the required ones (`id`, `description`, `phase`, `state`). These fields will be gathered by `create-task` when creating new tasks.
 
-Optional hooks run after pipeline steps. Configure in `config.json`:
+**Skill rules:** Map skill names to rule file names in `.agents/rules/`. Skills look up their name in this config and load the corresponding rule files.
 
-```json
-{
-  "hooks": {
-    "afterReview": ".agents/scripts/security-scan.sh"
-  }
-}
-```
+## Integrations
 
-Available hooks: `afterPlan`, `afterImplement`, `afterReview`, `afterVerify`, `beforeCommit`
+### GitHub
 
-### GitHub Integration
+The `push-pr` skill auto-detects available options:
 
-The `push-pr` skill requires GitHub access. One of the following must be available:
+| Option     | Notes                                 |
+| ---------- | ------------------------------------- |
+| GitHub CLI | `gh` installed and authenticated      |
+| GitHub MCP | Richer integration (issues, comments) |
 
-| Option         | How                                                  | Notes                                        |
-| -------------- | ---------------------------------------------------- | -------------------------------------------- |
-| **GitHub CLI** | `gh` installed and authenticated                     | Works everywhere, no MCP setup needed        |
-| **GitHub MCP** | MCP server configured (e.g. `@anthropic/github-mcp`) | Richer integration: read issues, PR comments |
+### Project Trackers
 
-The `push-pr` skill auto-detects which is available.
-
-## Conventions
-
-### AGENTS.md Files
-
-Root and subdirectory `AGENTS.md` files contain brief project context and pointers to rules/skills. Keep under ~50 lines.
-
-```markdown
-# AGENTS.md (example)
-
-## Overview
-
-[1-2 sentences about this project/feature]
-
-## Constraints
-
-- [Hard limits, known issues]
-
-## Rules
-
-Coding conventions in `.agents/rules/`. Read relevant rule files based on context.
-
-## Skills
-
-Workflows in `.agents/skills/`. Read SKILL.md in each folder when needed.
-```
-
-### Rules Files
-
-Rules in `.agents/rules/` define both coding standards and skill-specific criteria. Skills dynamically load relevant rules.
-
-To have an easy way for the LLM to load the rules, use the naming convention below:
-
-```
-.agents/rules/
-├── coding-standards.md      # General coding conventions
-├── testing-standards.md     # Test patterns and coverage
-├── code-review.md           # Review criteria (security, performance, etc.)
-├── code-verification.md     # Verification checklist
-├── commit.md                # Commit message format
-├── pull-requests.md         # PR description guidelines
-├── planning.md              # Architecture and planning patterns
-└── implementation.md        # Implementation patterns
-└── csharp.md                # Language specific rule
-└── typescript.md            # Language specific rule
-```
-
-**Sensible defaults:** The system ships with generic rules that work for any project. Extend them with project-specific criteria as needed (e.g., add "PII fields must use encryption helper" to `code-review.md`).
-
-**Dynamic loading:** Each skill specifies which rules it needs. If no matching rule file exists, the skill uses sensible defaults. See `.agents/AGENTS.md` for details.
-
-## Project Tracker Integration
-
-Tracker integration is **not baked in** — it lives outside the core system as scripts you run manually, in CI, or via [Cursor hooks](https://cursor.com/docs/agent/hooks).
-
-The system outputs standard file formats (`phase.md`, `state.json`) that scripts can consume:
-
-```
-phase-breakdown (LLM)
-      │
-      v
-phases/phase-XX-name/phase.md    ← Standard format
-      │
-      v
-sync-phase.sh (script)           ← Your automation
-      │
-      v
-GitHub Projects / Linear / etc.
-```
-
-### Integration Options
-
-**Manual/CI** — Run scripts when needed or on push/merge.
-
-**Cursor Hooks** — Auto-sync on agent events:
-
-- `afterFileEdit` — trigger when `state.json` changes
-- `stop` — sync status when agent completes a task
-
-### Sample Scripts
-
-See `scripts/gh-tracker/` for GitHub CLI examples:
-
-| Script             | Purpose                                            |
-| ------------------ | -------------------------------------------------- |
-| `sync-phase.sh`    | Parse `phase.md` → create items in GitHub Projects |
-| `update-status.sh` | Sync `state.json` → GitHub Projects status         |
-| `add-task.sh`      | Create task locally + in GitHub Projects           |
-
-Copy to your repo (e.g., `.github/scripts/`) and customize for your tracker.
-
-## Future Ideas
-
-See [docs/future-ideas.md](../docs/future-ideas.md) for planned extensions.
+Tracker integration lives outside the core system as scripts. The system outputs standard formats (`phase.md`, `state.json`) that scripts can consume.

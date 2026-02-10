@@ -1,6 +1,14 @@
 {
   "tasks": {
-    "fields": ["id", "description", "phase", "state", "priority"]
+    "fields": ["priority"]
   },
-  "hooks": {}
+  "skillRules": {
+    "plan": ["planning", "coding-standards", "testing-standards"],
+    "implement-task": ["coding-standards", "testing-standards"],
+    "code-review": ["code-review", "coding-standards", "testing-standards"],
+    "code-verification": ["code-verification"],
+    "documentation-update": ["documentation"],
+    "commit": ["commit"],
+    "push-pr": ["pull-requests"]
+  }
 }

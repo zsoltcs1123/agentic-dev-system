@@ -2,11 +2,19 @@
 
 ## Paths
 
-- Phases: `.agents/artifacts/phases/phase-{NN}-{name}/`
+- Phases: `.agents/artifacts/phases/phase-{XX}/`
 - Tasks: `{phase}/tasks/{task-id}/`
-- Task ID pattern: `p{NN}-task-{NNN}` (e.g., `p01-task-001`)
+- Task ID: `p{XX}-task-{YYY}` (e.g., `p01-task-001`)
 
-## Artifacts
+## Phase Resolution
+
+From task ID `pXX-task-YYY`:
+
+1. Extract phase number `XX` from prefix
+2. Find folder `phase-{XX}` in `.agents/artifacts/phases/`
+3. If not found → create folder `phase-{XX}`
+
+## Artifact Naming
 
 | File         | Pattern                     |
 | ------------ | --------------------------- |
@@ -15,25 +23,26 @@
 | Verification | `{task-id}-verification.md` |
 | State        | `{task-id}-state.json`      |
 
-## Output Limits
-
-- Review issues: max 10 per report
-- Log/error output: max 50 lines
-
 ## Rules Loading
 
-Skills dynamically load rules from `.agents/rules/`. Each skill specifies which rules it needs.
+Skills load rules from `.agents/config.json` → `skillRules.{skill-name}`:
 
-- Search `.agents/rules/` for matching files by name/topic
-- IMPORTANT: if no matching rule file exists, use sensible defaults
-- Rules are additive — load all that apply
+1. Look up skill name in `skillRules`
+2. Load each rule file from `.agents/rules/{rule-name}.md`
+3. If file doesn't exist, skip (rules are optional)
 
-Example: `code-review` loads `coding-standards.md`, `testing-standards.md`, and `code-review.md`.
+## State Updates (dev-cycle)
 
-## Hooks
+When updating `state.json`:
 
-Optional hooks in `config.json`:
+1. Set `state` to new value
+2. Append to `stateHistory` with timestamp
+3. Gates: include `result: "PASS"|"ISSUES"`
+4. Commit: include `commit: "{hash}"`
+5. Push-PR: include `pr: "{url}"`
 
-- `afterPlan`, `afterImplement`, `afterReview`, `afterVerify`, `beforeCommit`
+If `state.json` missing: create with current state, log warning.
 
-Run hook script if defined. Continue on success, fail pipeline on error.
+## Output Limits
+
+- Log/error output: max 50 lines

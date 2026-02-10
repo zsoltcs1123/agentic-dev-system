@@ -1,6 +1,6 @@
 ---
 name: documentation-update
-description: Updates project documentation after code changes. Use when asked to "update docs", "sync documentation", or after verification passes in dev-cycle. Keeps docs in sync with implementation.
+description: Updates project documentation after code changes. Use when asked to "update docs", "sync documentation", "document my changes", or "update the README".
 metadata:
   version: "0.1.0"
 ---
@@ -12,31 +12,19 @@ Keeps documentation in sync with code changes.
 ## When to Use
 
 - User asks to "update docs" or "sync documentation"
-- After verification PASS in dev-cycle
-- After any user-facing changes
-
-## Input
-
-- Task ID (phase-prefixed, e.g., `p01-task-001`)
-- Git diff or recent changes
+- After making user-facing changes
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions.
-
-1. **Find relevant rules** in `.agents/rules/`:
-   - Documentation
-1. **Parse task ID**: Extract phase number from prefix
-1. **Locate phase folder**
-1. **Identify doc files**: README, API docs, architecture docs, etc.
-1. **Review code changes**: Understand what changed
-1. **Determine updates needed**:
+1. **Load rules** from `.agents/config.json` → `skillRules.documentation-update`. If absent, use your judgment.
+2. **Get changes**: Staged changes, uncommitted changes, or specific files based on context
+3. **Identify affected docs**: README, API docs, architecture docs, config examples
+4. **Determine updates needed**:
    - New features → add documentation
    - Changed behavior → update existing docs
    - Removed features → remove or mark deprecated
-1. **Update docs**: Keep changes minimal and focused
-1. **Verify accuracy**: Ensure examples still work
-1. **Update task state** to DOCUMENTED
+5. **Update docs**: Keep changes minimal and focused on what changed
+6. **Output**: Report using format below
 
 ## Scope
 
@@ -53,10 +41,24 @@ See `.agents/AGENTS.md` for path conventions.
 - Changelog (handled separately)
 - Version numbers (handled by release process)
 
+## Output Format
+
+```markdown
+## Documentation Update: {UPDATED|SKIPPED}
+
+{If UPDATED:}
+Files updated:
+
+- {filepath}: {what was changed}
+
+{If SKIPPED:}
+No documentation updates needed.
+```
+
 ## Error Handling
 
-- No docs exist → report: "No documentation files found to update"
-- No code changes to document → skip with: "No changes require documentation updates"
+- No docs exist → SKIPPED with: "No documentation files found"
+- No changes require docs → SKIPPED with: "No changes require documentation updates"
 
 ## Important
 

@@ -1,57 +1,61 @@
 ---
 name: commit
-description: Stages and commits changes for a task with a descriptive message. Use when asked to "commit task-XXX", "commit changes", or as commit step in dev-cycle. Updates task state.
+description: Stages and commits changes with a descriptive message. Use when asked to "commit changes", "commit my work", "save my changes", or "git commit".
 metadata:
   version: "0.1.0"
 ---
 
 # Commit
 
-Stages and commits changes for a completed task.
+Stages and commits code changes.
 
 ## When to Use
 
-- User asks to "commit task-XXX" or "commit changes"
-- Dev-cycle invokes the commit step
+- User asks to "commit changes" or "commit my work"
 - Changes are ready to be recorded
-
-## Input
-
-- Task ID (phase-prefixed, e.g., `p01-task-001`)
-- Code changes (staged or unstaged)
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions and rules loading.
+1. **Load rules** from `.agents/config.json` → `skillRules.commit`. If absent, use default format below.
+2. **Create feature branch**: If on main/master, run `git checkout -b {task-id}`. Never commit directly to main/master.
+3. **Review changes**: Run `git status` to see pending changes
+4. **Stage changes**: `git add` relevant files (exclude secrets)
+5. **Compose message**: Use user-provided message if given, otherwise auto-generate following rules or default format
+6. **Commit**: Create commit with message and push to remote
+7. **Output**: Report using format below
 
-1. **Find relevant rules** in `.agents/rules/`:
-   - Commit
-2. **Parse task ID**: Extract phase number from prefix
-3. **Locate phase folder**
-4. **Review changes**: Run `git status` to see pending changes
-5. **Stage changes**: `git add` relevant files only
-6. **Compose message**: Follow rule format, reference task ID
-7. **Commit**: Create commit with descriptive message
-8. **Update task state** to COMMITTED in `{phase-folder}/tasks/{task-id}/{task-id}-state.json`
-
-## Commit Message Format
+## Commit Message Format (Default)
 
 ```
-{type}: {short description} ({task-id})
+{type}: {short description}
 
 {Optional body with details}
 ```
 
 **Types**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
+## Output Format
+
+```markdown
+## Commit: {SUCCESS|SKIPPED}
+
+{If SUCCESS:}
+
+- Hash: {commit-hash}
+- Message: {commit-message}
+- Files: {count} files changed
+
+{If SKIPPED:}
+No changes to commit.
+```
+
 ## Error Handling
 
-- Nothing to commit → report: "No changes to commit"
-- Untracked secret files detected → warn and exclude from commit
+- Nothing to commit → SKIPPED
+- Secret files detected (.env, credentials, keys) → warn and exclude from commit
 
 ## Important
 
-- Do not commit files containing secrets (.env, credentials, keys)
-- Do not force push or amend unless explicitly requested
-- Only commit changes related to the task
+- Never commit files containing secrets
+- Never force push or amend unless explicitly requested
 - Review diff before committing

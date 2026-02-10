@@ -1,62 +1,56 @@
 ---
 name: implement-task
-description: Implements a single task by executing its saved plan file. Use when asked to "implement task-XXX", execute a plan, or write code for a planned task. Writes code following project rules.
+description: Implements code by following a plan. Use when asked to "implement this plan", "execute the plan", "build this", "code this", or "write the code".
 metadata:
   version: "0.1.0"
 ---
 
 # Implement Task
 
-Executes an existing implementation plan by writing code.
+Executes an implementation plan by writing code.
 
 ## When to Use
 
-- User asks to "implement pXX-task-XXX"
-- Dev-cycle invokes the implement step (full system mode)
+- User asks to "implement this plan" or "execute the plan"
 - A plan exists and is ready for execution
-
-## Input
-
-- Task ID (phase-prefixed, e.g., `p01-task-001`)
 
 ## Procedure
 
-See `.agents/AGENTS.md` for path conventions and rules loading.
-
-1. **Find relevant rules** in `.agents/rules/`:
-
-   - Implementation
-   - Coding standards
-   - Testing standards
-   - Language specific rules
-
-2. **Parse task ID**: Extract phase number from prefix
-3. **Locate phase folder**
-4. **Read the plan** from `{phase-folder}/tasks/{task-id}/{task-id}-plan.md`
-5. **Verify plan is current**: If plan references files/patterns that no longer exist, stop and flag for re-planning
-6. **Implement step by step**:
+1. **Load rules** from `.agents/config.json` → `skillRules.implement-task`. If absent, use your own judgment.
+2. **Get the plan**: From user input, plan file, or conversation context
+3. **Verify plan is current**: If plan references files that no longer exist, warn and adapt approach
+4. **Implement step by step**:
    - Follow the plan's steps in order
    - Check each acceptance criterion as you go
    - Handle errors explicitly — don't swallow exceptions
-7. **Iterate on quality**: Let the agent's internal loop handle lint/test fixes
-8. **Update task state** to IMPLEMENTED
+   - Fix lint/test issues as they arise
+5. **Output**: Report using format below
 
-## Guidelines
+## Output Format
 
-- Follow the plan exactly — don't add scope
-- Apply project rules from `.agents/rules/`
-- Keep changes minimal and focused
-- If the plan is unclear, ask before guessing
+```markdown
+## Implementation: {COMPLETE|BLOCKED}
+
+### Changes Made
+
+- {file}: {what was changed}
+
+### Acceptance Criteria
+
+- [x] {criterion met}
+- [ ] {criterion not met — if BLOCKED}
+
+### Notes
+
+{Any deviations from plan, issues encountered, or reason for BLOCKED status}
+```
 
 ## Error Handling
 
-- Plan file not found → fail with: "No plan found for {task-id}. Run plan-task first."
-- Phase folder not found → fail with: "Phase folder not found for {task-id}"
-- Plan is stale (references non-existent files) → fail with: "Plan references outdated files. Re-run plan-task."
-- State file missing → create minimal state.json with current state
-- Implementation blocked by missing dependency → fail with: "Blocked: {dependency} not available"
+- No plan provided → ask user for plan or clarification
+- Plan is stale → warn and adapt: "Plan references outdated files. Adapting approach."
+- Blocked by missing dependency → BLOCKED with explanation
 
 ## Important
 
-1. Do NOT create a new plan. Execute the existing plan.
-2. Only read the rules that are relevant to the task.
+Execute the existing plan. Do not create a new plan unless the current one is fundamentally broken.
