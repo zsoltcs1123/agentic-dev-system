@@ -68,7 +68,7 @@ Create markdown files in `.agents/rules/` with your coding standards, then map t
 ├── config.json       # System configuration (task fields, skill rules)
 ├── skills/           # Workflows (the logic)
 │   ├── tasks/        # create-task
-│   └── workflow/     # plan, implement-task, code-review, etc.
+│   └── workflow/     # plan, implement, code-review, etc.
 ├── rules/            # User-defined rules (skill-specific criteria)
 └── artifacts/phases/ # Phase folders with tasks
 ```
@@ -119,7 +119,7 @@ Task Mode:   User → dev-cycle → Skill → Artifacts
 | Skill                  | Input              | Output             |
 | ---------------------- | ------------------ | ------------------ |
 | `plan`                 | description        | Plan markdown      |
-| `implement-task`       | plan               | Code changes       |
+| `implement`            | plan               | Code changes       |
 | `code-review`          | changes (optional) | PASS/ISSUES report |
 | `code-verification`    | criteria or plan   | PASS/ISSUES report |
 | `documentation-update` | —                  | Updated docs       |
@@ -138,7 +138,7 @@ Linear flow. On gate failure, stop and report. User fixes and re-runs.
 | Step      | Skill                  | Gate          |
 | --------- | ---------------------- | ------------- |
 | Plan      | `plan`                 | —             |
-| Implement | `implement-task`       | —             |
+| Implement | `implement`            | —             |
 | Review    | `code-review`          | PASS required |
 | Verify    | `code-verification`    | PASS required |
 | Document  | `documentation-update` | —             |

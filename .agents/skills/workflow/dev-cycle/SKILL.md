@@ -73,7 +73,7 @@ Skip completed steps based on state:
 
 #### Implement
 
-- Run `implement-task` skill with plan file path
+- Run `implement` skill with plan file path
 - Update state → IMPLEMENTED
 
 #### Review (Gate)

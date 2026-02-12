@@ -1,5 +1,5 @@
 ---
-name: implement-task
+name: implement
 description: Implements code by following a plan. Use when asked to "implement this plan", "execute the plan", "build this", "code this", or "write the code".
 metadata:
   version: "0.1.0"
@@ -16,7 +16,7 @@ Executes an implementation plan by writing code.
 
 ## Procedure
 
-1. **Load rules** from `.agents/config.json` → `skillRules.implement-task`. If absent, use your own judgment.
+1. **Load rules** from `.agents/config.json` → `skillRules.implement`. If absent, use your own judgment.
 2. **Get the plan**: From user input, plan file, or conversation context
 3. **Verify plan is current**: If plan references files that no longer exist, warn and adapt approach
 4. **Implement step by step**:

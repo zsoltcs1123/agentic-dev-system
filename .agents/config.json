@@ -4,7 +4,7 @@
   },
   "skillRules": {
     "plan": ["planning", "coding-standards", "testing-standards"],
-    "implement-task": ["coding-standards", "testing-standards"],
+    "implement": ["coding-standards", "testing-standards"],
     "code-review": ["code-review", "coding-standards", "testing-standards"],
     "code-verification": ["code-verification"],
     "documentation-update": ["documentation"],
