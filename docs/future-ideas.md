@@ -71,6 +71,30 @@ Useful for well-specified behavior and regression-heavy work where the acceptanc
 
 `plan-feature` and `implement-feature` for larger units of work that span multiple tasks. A feature-level plan would break down into task-level plans, each following the standard dev-cycle. Still exploratory — needs more thought on how this interacts with the phase-breakdown skill.
 
+## Goal-Backward Verification (Must-Haves)
+
+Inspired by GSD's `must_haves`. The idea: plans define observable truths from the user's perspective ("user can log in and access protected pages") in addition to task-forward acceptance criteria ("POST /api/auth/login returns JWT"). Verification then checks outcomes, not just steps.
+
+Not needed yet because the current system has human gates after every implementation — the user is already in the loop. Becomes valuable when parallelization is added (10 dev-cycles simultaneously) and the human can't review everything in real time.
+
+When implementing, consider:
+
+- Where must-haves are defined (plan format extension)
+- How `code-verification` checks them without requiring browser/E2E automation
+- Whether this is better as a separate post-verification step (like GSD's `/gsd:verify-work` which walks the user through testable claims manually)
+
+## Context Window Management
+
+LLM output quality degrades as the context window fills up (GSD documents this as: 0-30% peak, 50-70% degrading, 70%+ poor). The current system doesn't track or manage this.
+
+Potential mitigations:
+
+- Plan sizing guidance: keep plans to N steps max to stay within quality range
+- Implementation splitting: for large plans, split execution across multiple agent invocations
+- Subagent delegation: ensure heavy steps (implement, review) run in fresh subagent contexts
+
+Low priority while tasks are small and human-gated. Higher priority once harness/parallel execution is in play.
+
 ## Setup Skills
 
 A `setup-skills` skill that analyzes a target codebase and enriches the generic built-in skills with project-specific instructions. This would make the system truly plug-and-play: import the `.agents/` folder into any project, run `setup-skills`, and get workflow skills tailored to the project's framework, conventions, and structure.

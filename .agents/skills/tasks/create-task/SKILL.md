@@ -41,20 +41,26 @@ Creates a standardized task from user input. Synthesizes a clean description fro
    - User input may be messy, informal, or vague
    - Extract the core intent and synthesize a clean, actionable description
    - If truly ambiguous (multiple interpretations), ask user to clarify
-3. **Determine phase**:
+3. **Break into subtasks** (if applicable):
+   - If the task involves multiple logical chunks, list them as subtasks
+   - Subtasks must be in logical execution order
+   - Read `maxSubtasks` from `.agents/config.json` → `tasks.maxSubtasks` (default: 7)
+   - If subtask count exceeds the limit, tell user the task is too large and suggest how to split it. Do not proceed.
+   - Simple tasks may have no subtasks — that's fine
+4. **Determine phase**:
    - Get from user input or infer from context
    - If missing and cannot infer, ask user
-4. **Gather user-defined fields**:
+5. **Gather user-defined fields**:
    - For each field in config beyond the required four:
      - Try to infer from context or user input
      - If cannot infer, ask user
    - Continue until all fields have values
-5. **Generate task ID**: Extract phase number from phase name, find next available `p{NN}-task-XXX`
-6. **Create artifacts**:
+6. **Generate task ID**: Extract phase number from phase name, find next available `p{NN}-task-XXX`
+7. **Create artifacts**:
    - Task folder: `.agents/artifacts/phases/{phase}/tasks/{task-id}/`
    - State file: `{task-id}-state.json`
    - Append entry to `{phase}/phase.md`
-7. **Output**: Report using format below
+8. **Output**: Report using format below
 
 ## Task ID Generation
 
@@ -73,13 +79,20 @@ Scan existing task folders in the phase to find the next available number:
 ```json
 {
   "id": "p01-task-001",
-  "description": "Task description",
+  "description": "Setup devcontainer",
+  "subtasks": [
+    "Configure base image",
+    "Configure extensions",
+    "Configure shell",
+    "Mount filesystem"
+  ],
   "phase": "phase-01",
   "state": "PENDING",
   "stateHistory": [{ "state": "PENDING", "timestamp": "..." }]
-  // + any user-defined fields from config
 }
 ```
+
+The `subtasks` array is optional — omit it for simple tasks with no subtasks.
 
 ## Phase.md Entry Format
 
@@ -114,4 +127,5 @@ Append to the Tasks section:
 - Do not perform deep analysis — that's `plan`'s responsibility
 - Single logical unit of work
 - Completable in one session
-- Split larger work into subtasks
+- Subtasks should be in logical execution order
+- If task exceeds the configured subtask limit, split into separate tasks

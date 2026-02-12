@@ -220,6 +220,11 @@ Phase structure:
 {
   "id": "p01-task-001",
   "description": "Add user authentication",
+  "subtasks": [
+    "Setup auth middleware",
+    "Add login endpoint",
+    "Add token refresh"
+  ],
   "phase": "phase-01",
   "state": "REVIEWED",
   "priority": "high",
@@ -272,7 +277,8 @@ Settings in `.agents/config.json`:
 ```json
 {
   "tasks": {
-    "fields": ["priority", "assignee"]
+    "fields": ["priority", "assignee"],
+    "maxSubtasks": 7
   },
   "skillRules": {
     "plan": ["planning", "coding-standards"],
@@ -283,6 +289,8 @@ Settings in `.agents/config.json`:
 ```
 
 **Task fields:** Custom fields to add to tasks beyond the required ones (`id`, `description`, `phase`, `state`). These fields will be gathered by `create-task` when creating new tasks.
+
+**maxSubtasks:** Maximum number of subtasks per task (default: 7). `create-task` validates against this limit and asks the user to split if exceeded.
 
 **Skill rules:** Map skill names to rule file names in `.agents/rules/`. Skills look up their name in this config and load the corresponding rule files.
 

@@ -22,6 +22,7 @@ Creates a structured implementation plan before coding begins.
    - Find similar patterns in the codebase
    - Identify files likely to be affected
    - Check for relevant conventions or abstractions
+   - If task has subtasks, ensure all subtasks are covered by the steps. If no subtasks, derive steps directly from the description.
 4. **Create plan** using the format below
 5. **Output plan** to chat
 

@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "fields": ["priority"]
+    "fields": ["priority"],
+    "maxSubtasks": 7
   },
   "skillRules": {
     "plan": ["planning", "coding-standards", "testing-standards"],
