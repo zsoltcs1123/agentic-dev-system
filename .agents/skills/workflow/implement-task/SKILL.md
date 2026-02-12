@@ -26,6 +26,15 @@ Executes an implementation plan by writing code.
    - Fix lint/test issues as they arise
 5. **Output**: Report using format below
 
+## Deviation Rules
+
+During implementation, deviations from the plan are expected. Apply these rules:
+
+1. **Bugs, missing validation, blocking issues** — fix inline, note in output under Deviations
+2. **Architectural changes** (new DB tables, switching libraries, breaking API changes) — STOP, report as BLOCKED with proposed change
+
+All deviations must appear in the output report.
+
 ## Output Format
 
 ```markdown
@@ -40,9 +49,15 @@ Executes an implementation plan by writing code.
 - [x] {criterion met}
 - [ ] {criterion not met — if BLOCKED}
 
+### Deviations
+
+- {deviation description — what changed and why}
+
+Or: "None — plan executed as written."
+
 ### Notes
 
-{Any deviations from plan, issues encountered, or reason for BLOCKED status}
+{Issues encountered or reason for BLOCKED status}
 ```
 
 ## Error Handling
