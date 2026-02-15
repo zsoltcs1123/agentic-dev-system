@@ -1,0 +1,7 @@
+# Planning Rules
+
+## Getting Documentation
+
+- DO NOT plan without consulting the necessary documentation first.
+- Prefer using context7 MCP to get documentation. Fallback to web search when context7 is not available.
+- DO NOT use documentation that has a different version than what the current project is using.

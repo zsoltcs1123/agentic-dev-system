@@ -2,7 +2,7 @@
 name: dev-cycle
 description: Orchestrates the full development cycle for a task. Use when asked to "run dev-cycle", "complete task-XXX", "execute task", or "work on task".
 metadata:
-  version: "0.2.0"
+  version: "0.4.0"
 ---
 
 # Dev Cycle
@@ -11,14 +11,14 @@ Orchestrates the complete development workflow for a task. Owns all state manage
 
 ## When to Use
 
-- User asks to "run dev-cycle for pXX-task-XXX"
+- User asks to "run dev-cycle for task-XXX"
 - User asks to "dev-cycle: {user request}" with a new task
 - Running end-to-end task completion
 
 ## Input
 
-- **Task ID** (e.g., `p01-task-001`) — resumes from current state
-- OR **User request** + **Phase** — creates task first, then runs from PENDING
+- **Task ID** (e.g., `task-001`) — resumes from current state
+- OR **User request** — creates task first, then runs from PENDING
 
 User request can be messy or informal. The `create-task` skill synthesizes a clean description.
 
@@ -36,17 +36,16 @@ See `.agents/AGENTS.md` for path conventions.
 
 ### 0. Resolve Task Context
 
-1. **Detect input type**:
-   - If matches `pXX-task-XXX` pattern → existing task, go to step 3
-   - Otherwise → new task from user request, go to step 2
-2. **Create task** (if user request provided):
-   - Run `create-task` skill with user request and phase
+1. **Load config**: Read `.agents/config.json`. Load rules from `skillRules.dev-cycle` if present.
+2. **Check for task-organization rule**: If a loaded rule defines custom storage, ID format, or grouping, follow that convention instead of the defaults described below.
+3. **Detect input type**:
+   - If matches a known task ID pattern → existing task, go to step 5
+   - Otherwise → new task from user request, go to step 4
+4. **Create task** (if user request provided):
+   - Run `create-task` skill with user request
    - `create-task` synthesizes a clean description from the request
    - Use returned task ID
-3. Parse task ID: Extract phase number from prefix
-4. Locate phase folder: `.agents/artifacts/phases/phase-{XX}/`
-5. Locate or create task folder: `{phase}/tasks/{task-id}/`
-6. Read `state.json` to determine current state
+5. **Locate task**: Find the task by `id` in the tasks file to determine current state
 
 ### 1. Resume from Current State
 
@@ -65,58 +64,64 @@ Skip completed steps based on state:
 
 ### 2. Execute Steps
 
-#### Plan
+#### Plan (subagent)
 
-- Run `plan` skill with task description
-- Save output to `{task-id}-plan.md`
-- Update state → PLANNED
+- Delegate to a subagent running the `plan` skill with task description (readonly)
+- Save returned plan to `.agents/artifacts/{task-id}/{task-id}-plan.md`
+- Update task state in tasks file → PLANNED
 
-#### Implement
+#### Implement (subagent)
 
-- Run `implement` skill with plan file path
-- Update state → IMPLEMENTED
+- Delegate to a subagent running the `implement` skill with plan file path (needs write access)
+- Update task state in tasks file → IMPLEMENTED
 
-#### Review (Gate)
+#### Review (Gate, subagent)
 
-- Run `code-review` skill
-- Save output to `{task-id}-review.md`
-- **If PASS**: Update state → REVIEWED
+- Delegate to a subagent running the `code-review` skill (readonly)
+- Save returned review to `.agents/artifacts/{task-id}/{task-id}-review.md`
+- **If PASS**: Update task state in tasks file → REVIEWED
 - **If ISSUES**: STOP. Report issues. User fixes and re-runs dev-cycle.
 
-#### Verify (Gate)
+#### Verify (Gate, subagent)
 
-- Read acceptance criteria from `{task-id}-plan.md`
-- Run `code-verification` skill with the criteria
-- Save output to `{task-id}-verification.md`
-- **If PASS**: Update state → VERIFIED
+- Read acceptance criteria from `.agents/artifacts/{task-id}/{task-id}-plan.md`
+- Delegate to a subagent running the `code-verification` skill with the criteria (readonly)
+- Save returned verification to `.agents/artifacts/{task-id}/{task-id}-verification.md`
+- **If PASS**: Update task state in tasks file → VERIFIED
 - **If ISSUES**: STOP. Report issues. User fixes and re-runs dev-cycle.
 
 #### Document
 
 - Run `documentation-update` skill
-- Update state → DOCUMENTED
+- Update task state in tasks file → DOCUMENTED
 
 #### Commit
 
 - Run `commit` skill
-- Update state → COMMITTED
+- Update task state in tasks file → COMMITTED
 - Record commit hash in stateHistory
 
 #### Push-PR
 
 - Run `push-pr` skill
-- Update state → PR_CREATED
+- Update task state in tasks file → PR_CREATED
 - Record PR URL in stateHistory
+
+## Default Storage
+
+When no task-organization rule is present:
+
+- **Tasks file**: `.agents/artifacts/tasks.json`
+- **Task ID pattern**: `task-YYY` (e.g., `task-001`)
 
 ## State Tracking
 
-Update `{task-id}-state.json` after each step:
+Find the task by `id` in the tasks file and update in place after each step:
 
 ```json
 {
-  "id": "p01-task-001",
+  "id": "task-001",
   "description": "Add user authentication",
-  "phase": "phase-01",
   "state": "REVIEWED",
   "stateHistory": [
     { "state": "PENDING", "timestamp": "..." },
@@ -133,20 +138,21 @@ For push-pr, include `pr: "{url}"`.
 
 ## Artifact Paths
 
+Workflow artifacts live in a per-task folder under artifacts root:
+
 ```
-.agents/artifacts/phases/phase-{XX}/tasks/{task-id}/
+.agents/artifacts/{task-id}/
 ├── {task-id}-plan.md
 ├── {task-id}-review.md
-├── {task-id}-verification.md
-└── {task-id}-state.json
+└── {task-id}-verification.md
 ```
+
+Create the `.agents/artifacts/{task-id}/` folder on first artifact write.
 
 ## Error Handling
 
-- Description provided but no phase → ask user to specify phase
-- Phase folder not found → fail with: "Phase folder not found for {task-id}"
-- Task folder missing → create it
-- State file missing → create with PENDING state
+- Tasks file missing → create with empty array
+- Task not found in tasks file → append with PENDING state
 - Gate returns ISSUES → stop, report, exit (no automatic retry)
 
 ## On Failure
@@ -182,4 +188,13 @@ Final State: {state}
 
 ## Subagent Strategy
 
-For context isolation, run Review and Verify as subagents. Plan and Implement can run in main context.
+Run Plan, Implement, Review, and Verify in isolated subagents. Each subagent receives only the skill instructions and its scoped input — no prior conversation context leaks in.
+
+| Step      | Input                                        | Write access |
+| --------- | -------------------------------------------- | ------------ |
+| Plan      | Task description, relevant codebase context  | No           |
+| Implement | Plan file path, full codebase access         | Yes          |
+| Review    | Diff of changes                              | No           |
+| Verify    | Plan acceptance criteria, current code state | No           |
+
+**How to delegate**: Read the target skill's SKILL.md and pass its full content plus the required input as the subagent's prompt. Use whatever subagent/subprocess mechanism the host agent framework provides (e.g., Cursor Task tool, Claude sub-conversation, Copilot child agent). The subagent's returned message is the skill output. Save artifacts and update state in the orchestrator context, not inside the subagent.
